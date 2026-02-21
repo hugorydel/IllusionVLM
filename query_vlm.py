@@ -1,31 +1,44 @@
 #!/usr/bin/env python3
 """
-query_vlm.py - Query GPT-4o on Müller-Lyer stimulus grid (Phase 2)
+query_vlm.py - Query VLMs on Müller-Lyer stimulus grid (Phase 2)
 
 Sends each stimulus image to the OpenAI Vision API as a strict forced-choice
 question ("Which line looks longer — Bottom or Top?") and logs results to JSONL.
 
+Runs N_PARTICIPANTS independent passes over the full stimulus grid, each saved
+to its own file so that proportion-correct is computed over genuine independent
+samples rather than a single deterministic response.
+
 Each output record contains:
+    participant_id   : zero-padded integer (01–20)
     image_id         : stem of the image filename
-    illusion_strength: parsed from filename (0–100)
+    illusion_strength: parsed from filename
     true_diff        : parsed from filename (top − bottom physical length)
     response         : "Bottom" or "Top" (model's answer)
     correct          : 1/0/null — whether response matches physical truth
                        (null when true_diff == 0, i.e. lines are equal)
 
+Output layout:
+    results/synthetic_participants/participant_01.jsonl
+    results/synthetic_participants/participant_02.jsonl
+    ...
+    results/synthetic_participants/participant_20.jsonl
+
 Usage:
     python query_vlm.py
-    python query_vlm.py --image-dir ./stimuli --output ./results/raw_responses.jsonl
+    python query_vlm.py --image-dir ./stimuli --output-dir ./results/synthetic_participants
+    python query_vlm.py --n-participants 5 --temperature 1.0
 
 Options:
-    --image-dir PATH        Directory of .png stimuli (default: ./stimuli)
-    --output PATH           Output JSONL file        (default: ./results/raw_responses.jsonl)
-    --errors PATH           Error log JSONL file     (default: ./results/errors.jsonl)
-    --max-images N          Max images to process this run (default: 0 = all)
-    --max-concurrency N     Concurrent API requests  (default: 5)
-    --max-dimension N       Resize images above this (default: 1024)
-    --jpeg-quality N        JPEG quality 1–100       (default: 90)
-    --model NAME            OpenAI model             (default: gpt-4o)
+    --image-dir PATH        Directory of .png stimuli   (default: ./stimuli)
+    --output-dir PATH       Participant output directory (default: ./results/synthetic_participants)
+    --errors-dir PATH       Error log directory         (default: ./results/errors)
+    --n-participants N       Number of synthetic participants to run
+    --max-images N          Max images per participant  (default: 0 = all)
+    --max-concurrency N     Concurrent API requests
+    --max-dimension N       Resize images above this    (default: 1024)
+    --jpeg-quality N        JPEG quality 1–100          (default: 90)
+    --model NAME            OpenAI model                (default: from parameters.py)
     --force-reprocess       Ignore existing results and reprocess everything
     --dry-run               Print plan without making any API calls
 
@@ -64,6 +77,9 @@ DEFAULT_MODEL = OPENAI_MODEL
 VLM_PROMPT = vlm_prompt
 RESPONSE_SCHEMA = response_schema
 
+N_PARTICIPANTS: int = 250  # number of independent synthetic participants
+TEMPERATURE: float = 0.5  # API sampling temperature (>0 introduces variability)
+
 
 # ============================================================================
 # FILENAME PARSING
@@ -75,11 +91,11 @@ def parse_image_id(image_id: str) -> tuple[int, float]:
     Extract illusion_strength and true_diff from a stimulus filename stem.
 
     Example:
-        parse_image_id('MullerLyer_str050_diff+0.20') → (50, 0.20)
-        parse_image_id('MullerLyer_str025_diff-0.10') → (25, -0.10)
+        parse_image_id('MullerLyer_str+050_diff+0.20000') → (50, 0.20)
+        parse_image_id('MullerLyer_str-025_diff-0.10000') → (-25, -0.10)
     """
     parts = image_id.split("_")
-    strength = int(parts[1].replace("str", ""))
+    strength = float(parts[1].replace("str", ""))
     diff = float(parts[2].replace("diff", ""))
     return strength, diff
 
@@ -225,17 +241,19 @@ class VLMQuerier:
         self,
         api_key: str,
         model: str,
+        temperature: float = TEMPERATURE,
         max_retries: int = 5,
         initial_retry_delay: float = 1.0,
     ):
         self.client = AsyncOpenAI(api_key=api_key)
         self.model = model
+        self.temperature = temperature
         self.max_retries = max_retries
         self.initial_retry_delay = initial_retry_delay
 
     async def query_image(self, image_id: str, image_base64: str) -> Dict[str, Any]:
         """
-        Query OpeAI API on a single stimulus with exponential backoff retry.
+        Query OpenAI API on a single stimulus with exponential backoff retry.
 
         Returns:
             Dict with keys: image_id, illusion_strength, true_diff, response, correct.
@@ -260,9 +278,8 @@ class VLMQuerier:
                         }
                     ],
                     text={"format": RESPONSE_SCHEMA},
-                    max_output_tokens=500,
-                    reasoning={"effort": "none"},
-                    temperature=1,
+                    max_output_tokens=2500,
+                    temperature=self.temperature,
                 )
 
                 result = json.loads(response.output_text)
@@ -313,7 +330,8 @@ class BatchProcessor:
         image_dir: Path,
         output_path: Path,
         errors_path: Path,
-        max_concurrency: int = 5,
+        participant_id: int,
+        max_concurrency: int = 20,
         max_dimension: int = 1024,
         jpeg_quality: int = 90,
     ):
@@ -321,6 +339,7 @@ class BatchProcessor:
         self.image_dir = image_dir
         self.output_path = output_path
         self.errors_path = errors_path
+        self.participant_id = participant_id
         self.semaphore = asyncio.Semaphore(max_concurrency)
         self.max_dimension = max_dimension
         self.jpeg_quality = jpeg_quality
@@ -342,6 +361,8 @@ class BatchProcessor:
                 )
 
                 result = await self.querier.query_image(image_id, image_base64)
+                # Tag each record with its participant ID for traceability
+                result["participant_id"] = self.participant_id
 
                 async with self.results_lock:
                     async with aiofiles.open(self.output_path, "a") as f:
@@ -354,24 +375,111 @@ class BatchProcessor:
                 correct = result["correct"]
                 correct_str = "✓" if correct == 1 else ("✗" if correct == 0 else "–")
                 print(
-                    f"  [{self.processed:02d}] str={strength:3d} diff={diff:+.2f} "
-                    f"→ {resp:<5} {correct_str}"
+                    f"  [P{self.participant_id:02d} | {self.processed:03d}] "
+                    f"str={strength:+.0f} diff={diff:+.2f} → {resp:<6} {correct_str}"
                 )
 
             except Exception as e:
-                error_record = {"image_id": image_id, "error": str(e)}
+                error_record = {
+                    "participant_id": self.participant_id,
+                    "image_id": image_id,
+                    "error": str(e),
+                }
 
                 async with self.errors_lock:
                     async with aiofiles.open(self.errors_path, "a") as f:
                         await f.write(json.dumps(error_record) + "\n")
 
                 self.errors += 1
-                print(f"  ✗ ERROR  {image_id}: {str(e)[:100]}")
+                print(
+                    f"  ✗ ERROR  [P{self.participant_id:02d}] {image_id}: {str(e)[:100]}"
+                )
 
     async def process_batch(self, image_ids: List[str]) -> None:
         """Process all images concurrently (bounded by semaphore)."""
         tasks = [self.process_single_image(img_id) for img_id in image_ids]
         await asyncio.gather(*tasks)
+
+
+# ============================================================================
+# PARTICIPANT RUN
+# ============================================================================
+
+
+async def run_participant(
+    participant_id: int,
+    image_ids: List[str],
+    image_dir: Path,
+    output_dir: Path,
+    errors_dir: Path,
+    querier: VLMQuerier,
+    args,
+    force_reprocess: bool,
+) -> tuple[int, int]:
+    """
+    Run one synthetic participant over the full stimulus list.
+
+    Args:
+        participant_id: 1-based integer identifier for this participant.
+        image_ids:      Full list of discovered stimulus IDs.
+        output_dir:     Directory to write participant_XX.jsonl into.
+        errors_dir:     Directory to write participant_XX_errors.jsonl into.
+        querier:        Shared VLMQuerier instance.
+        args:           Parsed CLI arguments.
+        force_reprocess: Re-query images already present in the output file.
+
+    Returns:
+        (n_processed, n_errors) for this participant run.
+    """
+    output_path = output_dir / f"participant_{participant_id:02d}.jsonl"
+    errors_path = errors_dir / f"participant_{participant_id:02d}_errors.jsonl"
+
+    # Initialise files if absent
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    errors_path.parent.mkdir(parents=True, exist_ok=True)
+    if not output_path.exists():
+        output_path.write_text("")
+    if not errors_path.exists():
+        errors_path.write_text("")
+
+    # Skip already-done images unless --force-reprocess
+    if force_reprocess:
+        to_process = image_ids
+    else:
+        already_done = load_existing_results(output_path)
+        to_process = [img for img in image_ids if img not in already_done]
+        if already_done:
+            print(
+                f"  [P{participant_id:02d}] Skipping {len(already_done)} already-processed images"
+            )
+
+    # Apply per-run image limit
+    if args.max_images > 0:
+        to_process = to_process[: args.max_images]
+
+    if not to_process:
+        print(f"  [P{participant_id:02d}] ✓ Already complete — skipping.")
+        return 0, 0
+
+    print(f"\n{'─' * 60}")
+    print(
+        f"  Participant {participant_id:02d} / {args.n_participants}  ({len(to_process)} images)"
+    )
+    print(f"{'─' * 60}")
+
+    processor = BatchProcessor(
+        querier=querier,
+        image_dir=image_dir,
+        output_path=output_path,
+        errors_path=errors_path,
+        participant_id=participant_id,
+        max_concurrency=args.max_concurrency,
+        max_dimension=args.max_dimension,
+        jpeg_quality=args.jpeg_quality,
+    )
+
+    await processor.process_batch(to_process)
+    return processor.processed, processor.errors
 
 
 # ============================================================================
@@ -381,8 +489,8 @@ class BatchProcessor:
 
 async def main_async(args) -> None:
     image_dir = Path(args.image_dir)
-    output_path = Path(args.output)
-    errors_path = Path(args.errors)
+    output_dir = Path(args.output_dir)
+    errors_dir = Path(args.errors_dir)
 
     # Discover stimuli
     try:
@@ -391,61 +499,29 @@ async def main_async(args) -> None:
         print(f"Error: {e}")
         sys.exit(1)
 
-    # Load existing results to skip already-processed images
-    processed_images: Set[str] = set()
-    errored_images: Set[str] = set()
-
-    if not args.force_reprocess:
-        print("Checking for existing results...")
-        processed_images = load_existing_results(output_path)
-        errored_images = load_errored_images(errors_path)
-        if processed_images:
-            print(f"  ✓ Found {len(processed_images)} already-processed images")
-        if errored_images:
-            print(f"  ⚠️  Found {len(errored_images)} previously errored (will retry)")
-
-    # Filter out already-processed images; always retry errored ones
-    if args.force_reprocess:
-        unprocessed = all_images
-        skipped_count = 0
-    else:
-        unprocessed = [img for img in all_images if img not in processed_images]
-        skipped_count = len(all_images) - len(unprocessed)
-
-    # Apply per-run limit
-    if args.max_images > 0:
-        image_ids = unprocessed[: args.max_images]
-        remaining = len(unprocessed) - args.max_images
-    else:
-        image_ids = unprocessed
-        remaining = 0
-
     print("\n" + "=" * 60)
-    print("VLM FORCED-CHOICE QUERYING")
+    print("VLM FORCED-CHOICE QUERYING — SYNTHETIC PARTICIPANTS")
     print("=" * 60)
-    print(f"  Image directory  : {image_dir}")
-    print(f"  Total stimuli    : {len(all_images)}")
-    if skipped_count:
-        print(f"  Already done     : {skipped_count}")
-    print(f"  To process now   : {len(image_ids)}")
-    print(f"  Model            : {args.model}")
-    print(f"  Max concurrency  : {args.max_concurrency}")
-    print(f"  Temperature      : 0 (deterministic)")
-    print(f"  Output           : {output_path}")
-    print(f"  Errors           : {errors_path}")
+    print(f"  Image directory   : {image_dir}")
+    print(f"  Total stimuli     : {len(all_images)}")
+    print(f"  Participants      : {args.n_participants}")
+    print(
+        f"  Total API calls   : {len(all_images) * args.n_participants} (may be less if data already exists)"
+    )
+    print(f"  Model             : {args.model}")
+    print(f"  Temperature       : {args.temperature}")
+    print(f"  Max concurrency   : {args.max_concurrency}")
+    print(f"  Output directory  : {output_dir}/")
+    print(f"  Errors directory  : {errors_dir}/")
     print("=" * 60)
-
-    if len(image_ids) == 0:
-        print("\n✓ All images already processed. Use --force-reprocess to redo.")
-        return
 
     if args.dry_run:
         print("\n[DRY RUN] Would process:")
-        for img_id in image_ids:
-            print(f"  {img_id}")
+        for p in range(1, args.n_participants + 1):
+            print(f"  participant_{p:02d}.jsonl  ← {len(all_images)} images")
         return
 
-    # Prompt for API key securely
+    # Prompt for API key once, reuse across all participants
     print()
     api_key = getpass.getpass("Enter your OpenAI API key (input hidden): ")
     if not api_key or not api_key.strip():
@@ -453,47 +529,45 @@ async def main_async(args) -> None:
         sys.exit(1)
     print("  ✓ API key received\n")
 
-    # Ensure output dirs exist and files are initialised
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    errors_path.parent.mkdir(parents=True, exist_ok=True)
-    if not output_path.exists():
-        output_path.write_text("")
-    if not errors_path.exists():
-        errors_path.write_text("")
-
-    # Run
-    querier = VLMQuerier(api_key=api_key.strip(), model=args.model)
-    processor = BatchProcessor(
-        querier=querier,
-        image_dir=image_dir,
-        output_path=output_path,
-        errors_path=errors_path,
-        max_concurrency=args.max_concurrency,
-        max_dimension=args.max_dimension,
-        jpeg_quality=args.jpeg_quality,
+    querier = VLMQuerier(
+        api_key=api_key.strip(),
+        model=args.model,
+        temperature=args.temperature,
     )
 
-    print(f"Processing {len(image_ids)} images...\n")
-    await processor.process_batch(image_ids)
+    total_processed = 0
+    total_errors = 0
 
-    # Summary
-    total_done = len(processed_images) + processor.processed
+    for participant_id in range(1, args.n_participants + 1):
+        n_ok, n_err = await run_participant(
+            participant_id=participant_id,
+            image_ids=all_images,
+            image_dir=image_dir,
+            output_dir=output_dir,
+            errors_dir=errors_dir,
+            querier=querier,
+            args=args,
+            force_reprocess=args.force_reprocess,
+        )
+        total_processed += n_ok
+        total_errors += n_err
+
+    # Final summary
     print("\n" + "=" * 60)
-    print("COMPLETE")
+    print("ALL PARTICIPANTS COMPLETE")
     print("=" * 60)
-    print(f"  This run   : {processor.processed} ok, {processor.errors} errors")
-    print(f"  Total done : {total_done} / {len(all_images)}")
-    if remaining > 0:
-        print(f"\n  💡 {remaining} remaining — run again to continue.")
-    print(f"\n  📄 Results : {output_path}")
-    if processor.errors:
-        print(f"  ⚠️  Errors  : {errors_path}")
+    print(f"  Total responses   : {total_processed}")
+    print(f"  Total errors      : {total_errors}")
+    print(f"  Output directory  : {output_dir}/")
+    if total_errors:
+        print(f"  Error logs        : {errors_dir}/")
     print("=" * 60)
+    print("\nNext step: run fit_psychometrics.py to aggregate and fit PSEs.")
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Query GPT-4o on Müller-Lyer stimuli",
+        description="Query VLM on Müller-Lyer stimuli — synthetic participant paradigm",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
@@ -504,28 +578,40 @@ def main():
         help="Directory of stimulus PNGs (default: ./stimuli)",
     )
     parser.add_argument(
-        "--output",
+        "--output-dir",
         type=str,
-        default="./results/raw_responses.jsonl",
-        help="Output JSONL file (default: ./results/raw_responses.jsonl)",
+        default="./results/synthetic_participants",
+        help="Directory for participant JSONL files (default: ./results/synthetic_participants)",
     )
     parser.add_argument(
-        "--errors",
+        "--errors-dir",
         type=str,
-        default="./results/errors.jsonl",
-        help="Error log JSONL file (default: ./results/errors.jsonl)",
+        default="./results/errors",
+        help="Directory for error logs (default: ./results/errors)",
+    )
+    parser.add_argument(
+        "--n-participants",
+        type=int,
+        default=N_PARTICIPANTS,
+        help=f"Number of synthetic participants (default: {N_PARTICIPANTS})",
+    )
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=TEMPERATURE,
+        help=f"API sampling temperature (default: {TEMPERATURE})",
     )
     parser.add_argument(
         "--max-images",
         type=int,
         default=0,
-        help="Max images to process this run (default: 0 = all)",
+        help="Max images per participant (default: 0 = all)",
     )
     parser.add_argument(
         "--max-concurrency",
         type=int,
-        default=5,
-        help="Concurrent API requests (default: 5)",
+        default=250,
+        help="Concurrent API requests per participant",
     )
     parser.add_argument(
         "--max-dimension",
