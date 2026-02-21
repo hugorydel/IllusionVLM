@@ -47,6 +47,7 @@ import aiofiles
 from openai import AsyncOpenAI
 from PIL import Image
 
+from parameters import OPENAI_MODEL
 from response_schema import response_schema
 from vlm_prompt import vlm_prompt
 
@@ -59,7 +60,7 @@ if hasattr(sys.stderr, "reconfigure"):
 # CONFIGURATION
 # ============================================================================
 
-DEFAULT_MODEL = "gpt-4o"
+DEFAULT_MODEL = OPENAI_MODEL
 VLM_PROMPT = vlm_prompt
 RESPONSE_SCHEMA = response_schema
 
@@ -74,8 +75,8 @@ def parse_image_id(image_id: str) -> tuple[int, float]:
     Extract illusion_strength and true_diff from a stimulus filename stem.
 
     Example:
-        parse_image_id('ML_str050_diff+0.20') → (50, 0.20)
-        parse_image_id('ML_str025_diff-0.10') → (25, -0.10)
+        parse_image_id('MullerLyer_str050_diff+0.20') → (50, 0.20)
+        parse_image_id('MullerLyer_str025_diff-0.10') → (25, -0.10)
     """
     parts = image_id.split("_")
     strength = int(parts[1].replace("str", ""))
@@ -154,11 +155,11 @@ def discover_images(image_dir: Path) -> List[str]:
     if not image_dir.exists():
         raise FileNotFoundError(f"Image directory not found: {image_dir}")
 
-    png_files = list(image_dir.glob("ML_str*_diff*.png"))
+    png_files = list(image_dir.glob("MullerLyer_str*_diff*.png"))
 
     if not png_files:
         raise FileNotFoundError(
-            f"No Müller-Lyer stimuli (ML_str*_diff*.png) found in {image_dir}. "
+            f"No Müller-Lyer stimuli (MullerLyer_str*_diff*.png) found in {image_dir}. "
             "Run generate_stimuli.py first."
         )
 
@@ -259,7 +260,7 @@ class VLMQuerier:
                         }
                     ],
                     text={"format": RESPONSE_SCHEMA},
-                    max_output_tokens=50,
+                    max_output_tokens=500,
                 )
 
                 result = json.loads(response.output_text)

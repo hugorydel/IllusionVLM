@@ -12,8 +12,8 @@ Grid defaults:
   → 35 images total
 
 Filenames encode parameters for downstream parsing:
-    ML_str050_diff+0.20.png
-    ML_str025_diff-0.10.png
+    MullerLyer_str050_diff+0.20.png
+    MullerLyer_str025_diff-0.10.png
 
 Usage:
     python generate_stimuli.py [--output-dir PATH]
@@ -26,55 +26,13 @@ import argparse
 
 import matplotlib
 
+from parameters import DIFFERENCES, ILLUSION_STRENGTHS
+
 matplotlib.use("Agg")
 from multiprocessing import Pool
 from pathlib import Path
 
 import pyllusion
-
-# ============================================================================
-# GRID DEFINITION
-# ============================================================================
-
-ILLUSION_STRENGTHS = [
-    -49.0,
-    -42.0,
-    -35.0,
-    -28.0,
-    -21.0,
-    -14.0,
-    -7.0,
-    0.0,
-    7.0,
-    14.0,
-    21.0,
-    28.0,
-    35.0,
-    42.0,
-    49.0,
-]
-
-# Signed physical difference (matches the stimulus metadata field "Difference"
-# in RealityBending/IllusionGameValidation study2/stimuli/stimuli_part{1,2}.js)
-DIFFERENCES = [
-    -0.46,
-    -0.3587,
-    -0.27349,
-    -0.20297,
-    -0.14575,
-    -0.10044,
-    -0.06565,
-    -0.04,
-    0.04,
-    0.06565,
-    0.10044,
-    0.14575,
-    0.20297,
-    0.27349,
-    0.3587,
-    0.46,
-]
-
 
 # ============================================================================
 # HELPERS
@@ -93,12 +51,15 @@ def make_filename(strength: float, diff: float) -> str:
     the IllusionGameValidation parameter set.
 
     Examples:
-        make_filename( 50,   0.2)    → 'ML_str+050_diff+0.20000.png'
-        make_filename(-49,  -0.3587) → 'ML_str-049_diff-0.35870.png'
+        make_filename( 50,   0.2)    → 'MullerLyer_str+050_diff+0.20000.png'
+        make_filename(-49,  -0.3587) → 'MullerLyer_str-049_diff-0.35870.png'
     """
     s_sign = "-" if strength < 0 else "+"
     d_sign = "-" if diff < 0 else "+"
-    return f"ML_str{s_sign}{abs(int(strength)):03d}" f"_diff{d_sign}{abs(diff):.5f}.png"
+    return (
+        f"MullerLyer_str{s_sign}{abs(int(strength)):03d}"
+        f"_diff{d_sign}{abs(diff):.5f}.png"
+    )
 
 
 def parse_filename(stem: str) -> tuple[float, float]:
@@ -109,8 +70,8 @@ def parse_filename(stem: str) -> tuple[float, float]:
     str.replace(), so the logic is explicit and unambiguous.
 
     Example:
-        parse_filename('ML_str+050_diff+0.20000') → (50.0, 0.2)
-        parse_filename('ML_str-049_diff-0.35870') → (-49.0, -0.3587)
+        parse_filename('MullerLyer_str+050_diff+0.20000') → (50.0, 0.2)
+        parse_filename('MullerLyer_str-049_diff-0.35870') → (-49.0, -0.3587)
     """
     _, str_part, diff_part = stem.split("_")
     strength = float(str_part[3:])  # strip leading 'str'
