@@ -77,14 +77,25 @@ def cumulative_gaussian(x: np.ndarray, mu: float, sigma: float) -> np.ndarray:
 
 def difficulty_colormap(n: int) -> list:
     """
-    Return n colours from Red→Yellow→Green (hard→easy).
+    Return n colours from Red→Orange→Teal→Green (hard→easy).
+
+    Samples only the saturated outer portions of RdYlGn (roughly 0.0–0.42
+    for the red-orange side and 0.58–1.0 for the teal-green side), skipping
+    the pale yellow centre that becomes invisible on a white background.
 
     Index 0 = red (hardest), index n-1 = green (easiest).
-    Used by both Figure 1 (difficulty bins) and Figure 3 (illusion strength,
-    where the most incongruent/positive strength = hardest = red).
+    Used by both Figure 1 (difficulty bins) and Figure 3 (illusion strength).
     """
-    cmap = cm.get_cmap("RdYlGn", n)
-    return [cmap(i) for i in range(n)]
+    cmap = cm.get_cmap("RdYlGn")
+    half = n // 2
+    remainder = n - half
+    positions = np.concatenate(
+        [
+            np.linspace(0.02, 0.42, half),  # red → orange
+            np.linspace(0.58, 0.98, remainder),  # teal → green
+        ]
+    )
+    return [cmap(p) for p in positions]
 
 
 # ============================================================================
@@ -561,14 +572,13 @@ def main():
     )
 
     # ── Figure 1: require raw participant files ───────────────────────────
-    error_agg = None
     if not participants_dir.exists():
         print(
             f"⚠️  Skipping Figure 1: participants directory not found "
             f"({participants_dir}). Pass --participants-dir to enable."
         )
     else:
-        error_agg = plot_error_by_difficulty(
+        plot_error_by_difficulty(
             participants_dir,
             output_dir / "fig1_error_by_difficulty.png",
             model_name=args.model_name,
