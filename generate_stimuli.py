@@ -23,6 +23,11 @@ Requirements:
 """
 
 import argparse
+
+import matplotlib
+
+matplotlib.use("Agg")
+from multiprocessing import Pool
 from pathlib import Path
 
 import pyllusion
@@ -31,12 +36,44 @@ import pyllusion
 # GRID DEFINITION
 # ============================================================================
 
-ILLUSION_STRENGTHS = [0, 25, 50, 75, 100]
+ILLUSION_STRENGTHS = [
+    -49.0,
+    -42.0,
+    -35.0,
+    -28.0,
+    -21.0,
+    -14.0,
+    -7.0,
+    0.0,
+    7.0,
+    14.0,
+    21.0,
+    28.0,
+    35.0,
+    42.0,
+    49.0,
+]
 
-# Physical difference between right and left lines (right - left).
-# Positive → right line is physically longer.
-# Negative → left line is physically longer.
-DIFFERENCES = [-0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3]
+# Signed physical difference (matches the stimulus metadata field "Difference"
+# in RealityBending/IllusionGameValidation study2/stimuli/stimuli_part{1,2}.js)
+DIFFERENCES = [
+    -0.46,
+    -0.3587,
+    -0.27349,
+    -0.20297,
+    -0.14575,
+    -0.10044,
+    -0.06565,
+    -0.04,
+    0.04,
+    0.06565,
+    0.10044,
+    0.14575,
+    0.20297,
+    0.27349,
+    0.3587,
+    0.46,
+]
 
 
 # ============================================================================
@@ -44,29 +81,59 @@ DIFFERENCES = [-0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3]
 # ============================================================================
 
 
-def make_filename(strength: int, diff: float) -> str:
+def make_filename(strength: float, diff: float) -> str:
     """
     Encode illusion parameters into a filename for downstream parsing.
 
+    Strength is stored as a signed integer string (e.g. -049, +025).
+    Diff is stored at 5 decimal places to preserve the full precision of
+    the IllusionGameValidation parameter set.
+
     Examples:
-        make_filename(50,  0.2)  → 'ML_str050_diff+0.20.png'
-        make_filename(25, -0.1)  → 'ML_str025_diff-0.10.png'
+        make_filename( 50,   0.2)     → 'ML_str+050_diff+0.20000.png'
+        make_filename(-49,  -0.3587)  → 'ML_str-049_diff-0.35870.png'
     """
-    sign = "+" if diff >= 0 else ""
-    return f"ML_str{strength:03d}_diff{sign}{diff:.2f}.png"
+    str_sign = "+" if strength >= 0 else ""
+    diff_sign = "+" if diff >= 0 else ""
+    return f"ML_str{str_sign}{int(strength):03d}_diff{diff_sign}{diff:.5f}.png"
 
 
-def parse_filename(stem: str) -> tuple[int, float]:
+def parse_filename(stem: str) -> tuple[float, float]:
     """
     Reverse of make_filename — extract (illusion_strength, true_diff) from a stem.
 
     Example:
-        parse_filename('ML_str050_diff+0.20') → (50, 0.20)
+        parse_filename('ML_str+050_diff+0.20000') → (50.0, 0.2)
+        parse_filename('ML_str-049_diff-0.35870') → (-49.0, -0.3587)
     """
     parts = stem.split("_")
-    strength = int(parts[1].replace("str", ""))
+    strength = float(parts[1].replace("str", ""))
     diff = float(parts[2].replace("diff", ""))
     return strength, diff
+
+
+# ============================================================================
+# WORKER (must be top-level for multiprocessing pickling)
+# ============================================================================
+
+
+def _generate_one(args: tuple) -> str:
+    """
+    Generate and save a single stimulus. Returns the filename (or 'skipped').
+
+    Args:
+        args: (output_dir, strength, diff, force)
+    """
+    output_dir, strength, diff, force = args
+    filename = make_filename(strength, diff)
+    out_path = Path(output_dir) / filename
+
+    if out_path.exists() and not force:
+        return f"[skip]  {filename}"
+
+    illusion = pyllusion.MullerLyer(illusion_strength=strength, difference=diff)
+    illusion.to_image().save(out_path)
+    return f"[done]  {filename}"
 
 
 # ============================================================================
@@ -94,27 +161,20 @@ def generate_grid(output_dir: Path, force: bool = False) -> None:
     print(f"Output directory   : {output_dir}/")
     print("=" * 60 + "\n")
 
-    generated = 0
-    skipped = 0
+    task_args = [
+        (str(output_dir), strength, diff, force)
+        for strength in ILLUSION_STRENGTHS
+        for diff in DIFFERENCES
+    ]
 
-    for strength in ILLUSION_STRENGTHS:
-        for diff in DIFFERENCES:
-            filename = make_filename(strength, diff)
-            out_path = output_dir / filename
+    with Pool() as pool:
+        results = pool.map(_generate_one, task_args)
 
-            if out_path.exists() and not force:
-                print(f"  [skip]  {filename}")
-                skipped += 1
-                continue
+    for line in results:
+        print(f"  {line}")
 
-            illusion = pyllusion.MullerLyer(
-                illusion_strength=strength,
-                difference=diff,
-            )
-            img = illusion.to_image()
-            img.save(out_path)
-            generated += 1
-            print(f"  [{generated:02d}]    {filename}")
+    generated = sum(1 for r in results if r.startswith("[done]"))
+    skipped = sum(1 for r in results if r.startswith("[skip]"))
 
     print(f"\n✓ Generated : {generated} images")
     if skipped:
