@@ -610,7 +610,7 @@ def main():
     parser.add_argument(
         "--max-concurrency",
         type=int,
-        default=250,
+        default=240,
         help="Concurrent API requests per participant",
     )
     parser.add_argument(
