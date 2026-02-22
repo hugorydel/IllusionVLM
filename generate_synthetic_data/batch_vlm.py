@@ -80,7 +80,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-from model_parameters import MAX_TOKENS, OPENAI_MODEL, TEMPERATURE
+from model_parameters import MAX_BATCH_BYTES, MAX_TOKENS, OPENAI_MODEL, TEMPERATURE
 from openai import OpenAI
 from PIL import Image
 from query_vlm import compute_correct, discover_images, parse_image_id, preprocess_image
@@ -203,7 +203,7 @@ def build_single_request(
     }
 
 
-def prepare_batch_file(
+def prepare_batch_files(
     missing_ids: list[int],
     image_ids: list[str],
     image_dir: Path,
@@ -212,43 +212,87 @@ def prepare_batch_file(
     temperature: float,
     max_dimension: int,
     jpeg_quality: int,
-) -> Path:
+) -> list[tuple[Path, list[int]]]:
     """
-    Build the batch input JSONL and write it to batch_dir.
+    Build one or more batch input JSONLs, splitting at participant boundaries
+    whenever the running size would exceed MAX_BATCH_BYTES.
 
-    Returns the path to the written file.
+    Images are base64-encoded once and reused across all participants.
+    Returns a list of (path, participant_ids) tuples, one per sub-batch.
     """
     batch_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    out_path = batch_dir / f"batch_input_{timestamp}.jsonl"
-
     total = len(missing_ids) * len(image_ids)
+
     print(
-        f"\nPreparing batch JSONL: {len(missing_ids)} participants × "
+        f"\nPreparing batch JSONL(s): {len(missing_ids)} participants x "
         f"{len(image_ids)} images = {total} requests"
     )
-    print(f"  Writing to: {out_path}")
+    print(f"  Size limit per file : {MAX_BATCH_BYTES // 1024 // 1024} MB")
 
-    count = 0
-    with open(out_path, "w") as f:
-        for pid in missing_ids:
-            for image_id in image_ids:
-                image_path = image_dir / f"{image_id}.png"
-                image_base64 = preprocess_image(
-                    image_path,
-                    max_dimension=max_dimension,
-                    jpeg_quality=jpeg_quality,
-                )
-                request = build_single_request(
-                    pid, image_id, image_base64, model, temperature
-                )
-                f.write(json.dumps(request) + "\n")
-                count += 1
-                if count % 500 == 0:
-                    print(f"  ... {count}/{total} requests written")
+    # Encode all images once — reused for every participant
+    print("  Pre-encoding images...")
+    encoded: dict[str, str] = {}
+    for image_id in image_ids:
+        encoded[image_id] = preprocess_image(
+            image_dir / f"{image_id}.png",
+            max_dimension=max_dimension,
+            jpeg_quality=jpeg_quality,
+        )
+    print(f"  {len(encoded)} images encoded")
 
-    print(f"  ✓ {count} requests written")
-    return out_path
+    sub_batches: list[tuple[Path, list[int]]] = []
+    file_index = 1
+    current_ids: list[int] = []
+    current_bytes = 0
+    current_path = None
+    current_fh = None
+
+    def _open_new():
+        nonlocal file_index, current_path, current_fh
+        current_path = batch_dir / f"batch_input_{timestamp}_{file_index:02d}.jsonl"
+        file_index += 1
+        print(f"  Opening: {current_path.name}")
+        current_fh = open(current_path, "w", encoding="utf-8")
+
+    _open_new()
+
+    for pid in missing_ids:
+        pid_lines = [
+            json.dumps(
+                build_single_request(pid, img_id, encoded[img_id], model, temperature)
+            )
+            + "\n"
+            for img_id in image_ids
+        ]
+        pid_bytes = sum(len(l.encode()) for l in pid_lines)
+
+        # Roll over if this participant would push us over the limit
+        if current_ids and (current_bytes + pid_bytes) > MAX_BATCH_BYTES:
+            current_fh.close()
+            print(
+                f"    -> Closed with {len(current_ids)} participants, "
+                f"{current_bytes / 1024 / 1024:.1f} MB"
+            )
+            sub_batches.append((current_path, list(current_ids)))
+            current_ids = []
+            current_bytes = 0
+            _open_new()
+
+        for line in pid_lines:
+            current_fh.write(line)
+        current_ids.append(pid)
+        current_bytes += pid_bytes
+
+    current_fh.close()
+    print(
+        f"    -> Closed with {len(current_ids)} participants, "
+        f"{current_bytes / 1024 / 1024:.1f} MB"
+    )
+    sub_batches.append((current_path, list(current_ids)))
+
+    print(f"  {len(sub_batches)} sub-batch file(s) ready")
+    return sub_batches
 
 
 # ============================================================================
@@ -283,14 +327,14 @@ def cmd_submit(args) -> None:
     batch_dir = Path(args.batch_dir)
     state_path = Path(args.state_file)
 
-    # ── Discover stimuli ───────────────────────────────────────────────────
+    # -- Discover stimuli -----------------------------------------------------
     try:
         all_images = discover_images(image_dir)
     except FileNotFoundError as e:
         print(f"Error: {e}")
         sys.exit(1)
 
-    # ── Compute missing participant IDs ────────────────────────────────────
+    # -- Compute missing participant IDs --------------------------------------
     missing = missing_participant_ids(output_dir, args.n_participants)
     have = existing_participant_ids(output_dir)
 
@@ -307,15 +351,15 @@ def cmd_submit(args) -> None:
     print("=" * 60)
 
     if not missing:
-        print("\n✓ All participants already complete — nothing to submit.")
+        print("\n[OK] All participants already complete -- nothing to submit.")
         return
 
     if args.dry_run:
         print("\n[DRY RUN] Would submit the above batch. Exiting.")
         return
 
-    # ── Build batch JSONL ──────────────────────────────────────────────────
-    batch_path = prepare_batch_file(
+    # -- Build batch JSONL(s) — auto-split if > 190 MB -----------------------
+    sub_batch_files = prepare_batch_files(
         missing_ids=missing,
         image_ids=all_images,
         image_dir=image_dir,
@@ -326,7 +370,7 @@ def cmd_submit(args) -> None:
         jpeg_quality=args.jpeg_quality,
     )
 
-    # ── API key ────────────────────────────────────────────────────────────
+    # -- API key --------------------------------------------------------------
     print()
     api_key = getpass.getpass("Enter your OpenAI API key (input hidden): ")
     if not api_key.strip():
@@ -334,42 +378,56 @@ def cmd_submit(args) -> None:
         sys.exit(1)
     client = OpenAI(api_key=api_key.strip())
 
-    # ── Upload file ────────────────────────────────────────────────────────
-    print("\nUploading batch input file...")
-    with open(batch_path, "rb") as f:
-        uploaded = client.files.create(file=f, purpose="batch")
-    print(f"  ✓ File uploaded: {uploaded.id}  ({uploaded.filename})")
+    # -- Upload and submit each sub-batch -------------------------------------
+    submitted_batches = []
+    for i, (batch_path, pids) in enumerate(sub_batch_files, 1):
+        print(
+            f"\nSub-batch {i}/{len(sub_batch_files)}: "
+            f"{len(pids)} participants (IDs {pids[0]}-{pids[-1]})"
+        )
 
-    # ── Submit batch ───────────────────────────────────────────────────────
-    print("Submitting batch job...")
-    batch = client.batches.create(
-        input_file_id=uploaded.id,
-        endpoint="/v1/chat/completions",
-        completion_window="24h",
-        metadata={
-            "description": f"VLM illusion study — participants {missing[0]}–{missing[-1]}"
-        },
-    )
-    print(f"  ✓ Batch submitted: {batch.id}")
-    print(f"  Status            : {batch.status}")
-    print(f"  Completion window : ~24h")
+        print(f"  Uploading {batch_path.name}...")
+        with open(batch_path, "rb") as f:
+            uploaded = client.files.create(file=f, purpose="batch")
+        print(f"  File uploaded: {uploaded.id}")
 
-    # ── Save state ─────────────────────────────────────────────────────────
+        batch = client.batches.create(
+            input_file_id=uploaded.id,
+            endpoint="/v1/chat/completions",
+            completion_window="24h",
+            metadata={
+                "description": (
+                    f"VLM illusion study -- participants {pids[0]}-{pids[-1]} "
+                    f"(sub-batch {i}/{len(sub_batch_files)})"
+                )
+            },
+        )
+        print(f"  Batch submitted: {batch.id}  status={batch.status}")
+        submitted_batches.append(
+            {
+                "batch_id": batch.id,
+                "input_file_id": uploaded.id,
+                "participant_ids": pids,
+                "status": batch.status,
+                "output_file_id": None,
+            }
+        )
+
+    # -- Save state -----------------------------------------------------------
     state = {
-        "batch_id": batch.id,
-        "input_file_id": uploaded.id,
         "submitted_at": datetime.now(timezone.utc).isoformat(),
-        "participant_ids": missing,
         "n_participants_target": args.n_participants,
         "output_dir": str(output_dir),
         "model": args.model,
-        "status": batch.status,
+        "batches": submitted_batches,
     }
     save_state(state_path, state)
 
     print(f"\nNext steps:")
     print(f"  Check status : python batch_vlm.py status")
-    print(f"  Download     : python batch_vlm.py download  (once status = completed)")
+    print(
+        f"  Download     : python batch_vlm.py download  (once all batches = completed)"
+    )
 
 
 # ============================================================================
@@ -387,37 +445,43 @@ def cmd_status(args) -> None:
         sys.exit(1)
     client = OpenAI(api_key=api_key.strip())
 
-    batch = client.batches.retrieve(state["batch_id"])
+    batches = state.get("batches", [])
+    print("\n" + "=" * 60)
+    print(f"BATCH STATUS  ({len(batches)} sub-batch(es))")
+    print("=" * 60)
+    print(f"  Submitted at : {state['submitted_at']}")
+    print(f"  Model        : {state.get('model', 'unknown')}")
+
+    all_complete = True
+    for i, b in enumerate(batches, 1):
+        batch = client.batches.retrieve(b["batch_id"])
+        b["status"] = batch.status
+        if batch.output_file_id:
+            b["output_file_id"] = batch.output_file_id
+        if batch.status != "completed":
+            all_complete = False
+
+        print(f"\n  Sub-batch {i}/{len(batches)}:")
+        print(f"    Batch ID     : {batch.id}")
+        print(f"    Status       : {batch.status}")
+        print(f"    Participants : {b['participant_ids']}")
+        if batch.request_counts:
+            rc = batch.request_counts
+            print(
+                f"    Requests     : {rc.completed}/{rc.total} complete, {rc.failed} failed"
+            )
+        if batch.output_file_id:
+            print(f"    Output file  : {batch.output_file_id}")
+        if batch.status == "failed":
+            print(f"    [FAILED] Check the OpenAI dashboard for details.")
 
     print("\n" + "=" * 60)
-    print("BATCH STATUS")
-    print("=" * 60)
-    print(f"  Batch ID          : {batch.id}")
-    print(f"  Status            : {batch.status}")
-    print(f"  Submitted at      : {state['submitted_at']}")
-    print(f"  Participants      : {state['participant_ids']}")
-    if batch.request_counts:
-        rc = batch.request_counts
-        print(f"  Requests total    : {rc.total}")
-        print(f"  Requests completed: {rc.completed}")
-        print(f"  Requests failed   : {rc.failed}")
-    if batch.output_file_id:
-        print(f"  Output file ID    : {batch.output_file_id}")
-    print("=" * 60)
-
-    if batch.status == "completed":
-        print(
-            "\n✓ Batch complete — run 'python batch_vlm.py download' to retrieve results."
-        )
-    elif batch.status == "failed":
-        print("\n✗ Batch failed. Check the OpenAI dashboard for details.")
+    n_done = sum(1 for b in batches if b["status"] == "completed")
+    if all_complete:
+        print("\n[OK] All sub-batches complete -- run 'python batch_vlm.py download'.")
     else:
-        print(f"\n  Still processing. Check again later.")
+        print(f"\n  {n_done}/{len(batches)} sub-batches complete. Check again later.")
 
-    # Update status in state file
-    state["status"] = batch.status
-    if batch.output_file_id:
-        state["output_file_id"] = batch.output_file_id
     save_state(state_path, state)
 
 
@@ -479,12 +543,9 @@ def cmd_download(args) -> None:
     output_dir = Path(args.output_dir or state["output_dir"])
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    if state.get("status") != "completed" and "output_file_id" not in state:
-        print("Batch does not appear to be completed yet.")
-        print("Run 'python batch_vlm.py status' to check.")
-        print(
-            "(If you believe it is complete, re-run status first to refresh the state file.)"
-        )
+    batches = state.get("batches", [])
+    if not batches:
+        print("Error: No batches found in state file. Re-run 'submit' first.")
         sys.exit(1)
 
     api_key = getpass.getpass("Enter your OpenAI API key (input hidden): ")
@@ -493,37 +554,38 @@ def cmd_download(args) -> None:
         sys.exit(1)
     client = OpenAI(api_key=api_key.strip())
 
-    # Retrieve output file ID (refresh from API in case state is stale)
-    batch = client.batches.retrieve(state["batch_id"])
-    if batch.status != "completed":
-        print(
-            f"Batch status is '{batch.status}', not 'completed'. Cannot download yet."
-        )
-        sys.exit(1)
-
-    output_file_id = batch.output_file_id
-    print(f"\nDownloading results (file: {output_file_id})...")
-    raw = client.files.content(output_file_id).text
-    lines = [l for l in raw.splitlines() if l.strip()]
-    print(f"  ✓ {len(lines)} response lines received")
-
-    # ── Parse and bucket by participant ───────────────────────────────────
     records_by_participant: dict[int, list[dict]] = {}
-    n_ok = 0
-    n_fail = 0
+    total_ok = 0
+    total_fail = 0
 
-    for line in lines:
-        record = parse_batch_response(line)
-        if record is None:
-            n_fail += 1
+    for i, b in enumerate(batches, 1):
+        print(f"\nSub-batch {i}/{len(batches)}: {b['batch_id']}")
+        batch = client.batches.retrieve(b["batch_id"])
+
+        if batch.status != "completed":
+            print(f"  [SKIP] Status is '{batch.status}' -- not yet complete.")
             continue
-        pid = record["participant_id"]
-        records_by_participant.setdefault(pid, []).append(record)
-        n_ok += 1
 
-    print(f"  ✓ Parsed: {n_ok} successful, {n_fail} failed")
+        print(f"  Downloading (file: {batch.output_file_id})...")
+        raw = client.files.content(batch.output_file_id).text
+        lines = [ln for ln in raw.splitlines() if ln.strip()]
+        print(f"  {len(lines)} response lines received")
 
-    # ── Write participant files ────────────────────────────────────────────
+        n_ok = n_fail = 0
+        for line in lines:
+            record = parse_batch_response(line)
+            if record is None:
+                n_fail += 1
+                continue
+            records_by_participant.setdefault(record["participant_id"], []).append(
+                record
+            )
+            n_ok += 1
+        print(f"  Parsed: {n_ok} successful, {n_fail} failed")
+        total_ok += n_ok
+        total_fail += n_fail
+
+    # -- Write participant files ----------------------------------------------
     print(f"\nWriting participant files to {output_dir}/")
     for pid in sorted(records_by_participant):
         out_path = output_dir / f"participant_{pid:02d}.jsonl"
@@ -534,19 +596,18 @@ def cmd_download(args) -> None:
         with open(out_path, "w") as f:
             for rec in records:
                 f.write(json.dumps(rec) + "\n")
-        print(f"  ✓ participant_{pid:02d}.jsonl  ({len(records)} responses)")
+        print(f"  participant_{pid:02d}.jsonl  ({len(records)} responses)")
 
-    # ── Summary ───────────────────────────────────────────────────────────
     print("\n" + "=" * 60)
     print("DOWNLOAD COMPLETE")
     print("=" * 60)
     print(f"  Participants written : {len(records_by_participant)}")
-    print(f"  Failed requests      : {n_fail}")
+    print(f"  Total successful     : {total_ok}")
+    print(f"  Total failed         : {total_fail}")
     print(f"  Output directory     : {output_dir}/")
     print("=" * 60)
     print("\nNext step: run fit_psychometrics.py to aggregate and fit PSEs.")
 
-    # Mark state as downloaded
     state["status"] = "downloaded"
     save_state(state_path, state)
 

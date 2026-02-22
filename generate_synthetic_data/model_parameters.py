@@ -2,6 +2,7 @@ OPENAI_MODEL = "gpt-5.2"
 MAX_TOKENS = 2500
 TEMPERATURE = 0.5
 N_PARTICIPANTS = 100
+MAX_BATCH_BYTES: int = 190 * 1024 * 1024  # 190 MB — safely under OpenAI 200 MB limit
 
 # ============================================================================
 # GRID DEFINITION
