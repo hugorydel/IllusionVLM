@@ -84,8 +84,9 @@
         99,
         100
       ],
-      "status": "validating",
-      "output_file_id": null
+      "status": "completed",
+      "output_file_id": "file-95WEEbrGbr9edsMoW5J4jJ"
     }
-  ]
+  ],
+  "status": "downloaded"
 }
