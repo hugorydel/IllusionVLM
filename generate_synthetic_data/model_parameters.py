@@ -1,4 +1,7 @@
 OPENAI_MODEL = "gpt-5.2"
+MAX_TOKENS = 2500
+TEMPERATURE = 0.5
+N_PARTICIPANTS = 100
 
 # ============================================================================
 # GRID DEFINITION

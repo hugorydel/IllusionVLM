@@ -46,7 +46,7 @@ import numpy as np
 import pandas as pd
 from scipy.special import erf
 
-from parameters import OPENAI_MODEL
+from generate_synthetic_data.model_parameters import OPENAI_MODEL
 
 # ============================================================================
 # CONSTANTS

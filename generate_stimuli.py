@@ -21,7 +21,7 @@ import argparse
 
 import matplotlib
 
-from parameters import DIFFERENCES, ILLUSION_STRENGTHS
+from generate_synthetic_data.model_parameters import DIFFERENCES, ILLUSION_STRENGTHS
 
 matplotlib.use("Agg")
 from multiprocessing import Pool

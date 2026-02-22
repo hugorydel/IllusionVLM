@@ -57,10 +57,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
 import aiofiles
+from model_parameters import MAX_TOKENS, N_PARTICIPANTS, OPENAI_MODEL, TEMPERATURE
 from openai import AsyncOpenAI
 from PIL import Image
-
-from parameters import OPENAI_MODEL
 from response_schema import response_schema
 from vlm_prompt import vlm_prompt
 
@@ -76,10 +75,6 @@ if hasattr(sys.stderr, "reconfigure"):
 DEFAULT_MODEL = OPENAI_MODEL
 VLM_PROMPT = vlm_prompt
 RESPONSE_SCHEMA = response_schema
-
-N_PARTICIPANTS: int = 250  # number of independent synthetic participants
-TEMPERATURE: float = 0.5  # API sampling temperature (>0 introduces variability)
-
 
 # ============================================================================
 # FILENAME PARSING
@@ -278,7 +273,7 @@ class VLMQuerier:
                         }
                     ],
                     text={"format": RESPONSE_SCHEMA},
-                    max_output_tokens=2500,
+                    max_output_tokens=MAX_TOKENS,
                     temperature=self.temperature,
                 )
 
@@ -593,7 +588,7 @@ def main():
         "--n-participants",
         type=int,
         default=N_PARTICIPANTS,
-        help=f"Number of synthetic participants (default: {N_PARTICIPANTS})",
+        help=f"Number of synthetic participants to get up to (default: {N_PARTICIPANTS})",
     )
     parser.add_argument(
         "--temperature",
