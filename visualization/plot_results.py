@@ -252,8 +252,7 @@ def plot_error_by_difficulty(
     ax.legend(
         fontsize=9,
         loc="upper left",
-        ncol=2,
-        title="Task difficulty  (red = hard, green = easy)",
+        title="Task difficulty",
         title_fontsize=8,
     )
     ax.grid(True, alpha=0.3)
