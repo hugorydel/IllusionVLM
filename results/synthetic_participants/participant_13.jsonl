@@ -17,6 +17,7 @@
 {"participant_id": 13, "image_id": "MullerLyer_str-049_diff+0.57877", "illusion_strength": -49.0, "true_diff": 0.57877, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str-049_diff+0.71641", "illusion_strength": -49.0, "true_diff": 0.71641, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str-049_diff+0.87429", "illusion_strength": -49.0, "true_diff": 0.87429, "response": "Top", "correct": 1}
+{"participant_id": 13, "image_id": "MullerLyer_str-049_diff+1.05382", "illusion_strength": -49.0, "true_diff": 1.05382, "response": "Top", "correct": 1}
 {"image_id": "MullerLyer_str-042_diff-0.46000", "illusion_strength": -42.0, "true_diff": -0.46, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str-042_diff-0.35870", "illusion_strength": -42.0, "true_diff": -0.3587, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str-042_diff-0.27349", "illusion_strength": -42.0, "true_diff": -0.27349, "response": "Bottom", "correct": 1, "participant_id": 13}
@@ -36,6 +37,7 @@
 {"participant_id": 13, "image_id": "MullerLyer_str-042_diff+0.57877", "illusion_strength": -42.0, "true_diff": 0.57877, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str-042_diff+0.71641", "illusion_strength": -42.0, "true_diff": 0.71641, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str-042_diff+0.87429", "illusion_strength": -42.0, "true_diff": 0.87429, "response": "Top", "correct": 1}
+{"participant_id": 13, "image_id": "MullerLyer_str-042_diff+1.05382", "illusion_strength": -42.0, "true_diff": 1.05382, "response": "Top", "correct": 1}
 {"image_id": "MullerLyer_str-035_diff-0.46000", "illusion_strength": -35.0, "true_diff": -0.46, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str-035_diff-0.35870", "illusion_strength": -35.0, "true_diff": -0.3587, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str-035_diff-0.27349", "illusion_strength": -35.0, "true_diff": -0.27349, "response": "Bottom", "correct": 1, "participant_id": 13}
@@ -55,6 +57,7 @@
 {"participant_id": 13, "image_id": "MullerLyer_str-035_diff+0.57877", "illusion_strength": -35.0, "true_diff": 0.57877, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str-035_diff+0.71641", "illusion_strength": -35.0, "true_diff": 0.71641, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str-035_diff+0.87429", "illusion_strength": -35.0, "true_diff": 0.87429, "response": "Top", "correct": 1}
+{"participant_id": 13, "image_id": "MullerLyer_str-035_diff+1.05382", "illusion_strength": -35.0, "true_diff": 1.05382, "response": "Top", "correct": 1}
 {"image_id": "MullerLyer_str-028_diff-0.46000", "illusion_strength": -28.0, "true_diff": -0.46, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str-028_diff-0.35870", "illusion_strength": -28.0, "true_diff": -0.3587, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str-028_diff-0.27349", "illusion_strength": -28.0, "true_diff": -0.27349, "response": "Bottom", "correct": 1, "participant_id": 13}
@@ -74,6 +77,7 @@
 {"participant_id": 13, "image_id": "MullerLyer_str-028_diff+0.57877", "illusion_strength": -28.0, "true_diff": 0.57877, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str-028_diff+0.71641", "illusion_strength": -28.0, "true_diff": 0.71641, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str-028_diff+0.87429", "illusion_strength": -28.0, "true_diff": 0.87429, "response": "Top", "correct": 1}
+{"participant_id": 13, "image_id": "MullerLyer_str-028_diff+1.05382", "illusion_strength": -28.0, "true_diff": 1.05382, "response": "Top", "correct": 1}
 {"image_id": "MullerLyer_str-021_diff-0.46000", "illusion_strength": -21.0, "true_diff": -0.46, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str-021_diff-0.35870", "illusion_strength": -21.0, "true_diff": -0.3587, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str-021_diff-0.27349", "illusion_strength": -21.0, "true_diff": -0.27349, "response": "Bottom", "correct": 1, "participant_id": 13}
@@ -93,6 +97,7 @@
 {"participant_id": 13, "image_id": "MullerLyer_str-021_diff+0.57877", "illusion_strength": -21.0, "true_diff": 0.57877, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str-021_diff+0.71641", "illusion_strength": -21.0, "true_diff": 0.71641, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str-021_diff+0.87429", "illusion_strength": -21.0, "true_diff": 0.87429, "response": "Top", "correct": 1}
+{"participant_id": 13, "image_id": "MullerLyer_str-021_diff+1.05382", "illusion_strength": -21.0, "true_diff": 1.05382, "response": "Top", "correct": 1}
 {"image_id": "MullerLyer_str-014_diff-0.46000", "illusion_strength": -14.0, "true_diff": -0.46, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str-014_diff-0.35870", "illusion_strength": -14.0, "true_diff": -0.3587, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str-014_diff-0.27349", "illusion_strength": -14.0, "true_diff": -0.27349, "response": "Bottom", "correct": 1, "participant_id": 13}
@@ -112,6 +117,7 @@
 {"participant_id": 13, "image_id": "MullerLyer_str-014_diff+0.57877", "illusion_strength": -14.0, "true_diff": 0.57877, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str-014_diff+0.71641", "illusion_strength": -14.0, "true_diff": 0.71641, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str-014_diff+0.87429", "illusion_strength": -14.0, "true_diff": 0.87429, "response": "Top", "correct": 1}
+{"participant_id": 13, "image_id": "MullerLyer_str-014_diff+1.05382", "illusion_strength": -14.0, "true_diff": 1.05382, "response": "Top", "correct": 1}
 {"image_id": "MullerLyer_str-007_diff-0.46000", "illusion_strength": -7.0, "true_diff": -0.46, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str-007_diff-0.35870", "illusion_strength": -7.0, "true_diff": -0.3587, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str-007_diff-0.27349", "illusion_strength": -7.0, "true_diff": -0.27349, "response": "Bottom", "correct": 1, "participant_id": 13}
@@ -131,6 +137,7 @@
 {"participant_id": 13, "image_id": "MullerLyer_str-007_diff+0.57877", "illusion_strength": -7.0, "true_diff": 0.57877, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str-007_diff+0.71641", "illusion_strength": -7.0, "true_diff": 0.71641, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str-007_diff+0.87429", "illusion_strength": -7.0, "true_diff": 0.87429, "response": "Top", "correct": 1}
+{"participant_id": 13, "image_id": "MullerLyer_str-007_diff+1.05382", "illusion_strength": -7.0, "true_diff": 1.05382, "response": "Top", "correct": 1}
 {"image_id": "MullerLyer_str+000_diff-0.46000", "illusion_strength": 0.0, "true_diff": -0.46, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str+000_diff-0.35870", "illusion_strength": 0.0, "true_diff": -0.3587, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str+000_diff-0.27349", "illusion_strength": 0.0, "true_diff": -0.27349, "response": "Bottom", "correct": 1, "participant_id": 13}
@@ -150,6 +157,7 @@
 {"participant_id": 13, "image_id": "MullerLyer_str+000_diff+0.57877", "illusion_strength": 0.0, "true_diff": 0.57877, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str+000_diff+0.71641", "illusion_strength": 0.0, "true_diff": 0.71641, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str+000_diff+0.87429", "illusion_strength": 0.0, "true_diff": 0.87429, "response": "Top", "correct": 1}
+{"participant_id": 13, "image_id": "MullerLyer_str+000_diff+1.05382", "illusion_strength": 0.0, "true_diff": 1.05382, "response": "Top", "correct": 1}
 {"image_id": "MullerLyer_str+007_diff-0.46000", "illusion_strength": 7.0, "true_diff": -0.46, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str+007_diff-0.35870", "illusion_strength": 7.0, "true_diff": -0.3587, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str+007_diff-0.27349", "illusion_strength": 7.0, "true_diff": -0.27349, "response": "Bottom", "correct": 1, "participant_id": 13}
@@ -169,6 +177,7 @@
 {"participant_id": 13, "image_id": "MullerLyer_str+007_diff+0.57877", "illusion_strength": 7.0, "true_diff": 0.57877, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str+007_diff+0.71641", "illusion_strength": 7.0, "true_diff": 0.71641, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str+007_diff+0.87429", "illusion_strength": 7.0, "true_diff": 0.87429, "response": "Top", "correct": 1}
+{"participant_id": 13, "image_id": "MullerLyer_str+007_diff+1.05382", "illusion_strength": 7.0, "true_diff": 1.05382, "response": "Top", "correct": 1}
 {"image_id": "MullerLyer_str+014_diff-0.46000", "illusion_strength": 14.0, "true_diff": -0.46, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str+014_diff-0.35870", "illusion_strength": 14.0, "true_diff": -0.3587, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str+014_diff-0.27349", "illusion_strength": 14.0, "true_diff": -0.27349, "response": "Bottom", "correct": 1, "participant_id": 13}
@@ -188,6 +197,7 @@
 {"participant_id": 13, "image_id": "MullerLyer_str+014_diff+0.57877", "illusion_strength": 14.0, "true_diff": 0.57877, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str+014_diff+0.71641", "illusion_strength": 14.0, "true_diff": 0.71641, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str+014_diff+0.87429", "illusion_strength": 14.0, "true_diff": 0.87429, "response": "Top", "correct": 1}
+{"participant_id": 13, "image_id": "MullerLyer_str+014_diff+1.05382", "illusion_strength": 14.0, "true_diff": 1.05382, "response": "Top", "correct": 1}
 {"image_id": "MullerLyer_str+021_diff-0.46000", "illusion_strength": 21.0, "true_diff": -0.46, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str+021_diff-0.35870", "illusion_strength": 21.0, "true_diff": -0.3587, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str+021_diff-0.27349", "illusion_strength": 21.0, "true_diff": -0.27349, "response": "Bottom", "correct": 1, "participant_id": 13}
@@ -207,6 +217,7 @@
 {"participant_id": 13, "image_id": "MullerLyer_str+021_diff+0.57877", "illusion_strength": 21.0, "true_diff": 0.57877, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str+021_diff+0.71641", "illusion_strength": 21.0, "true_diff": 0.71641, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str+021_diff+0.87429", "illusion_strength": 21.0, "true_diff": 0.87429, "response": "Top", "correct": 1}
+{"participant_id": 13, "image_id": "MullerLyer_str+021_diff+1.05382", "illusion_strength": 21.0, "true_diff": 1.05382, "response": "Top", "correct": 1}
 {"image_id": "MullerLyer_str+028_diff-0.46000", "illusion_strength": 28.0, "true_diff": -0.46, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str+028_diff-0.35870", "illusion_strength": 28.0, "true_diff": -0.3587, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str+028_diff-0.27349", "illusion_strength": 28.0, "true_diff": -0.27349, "response": "Bottom", "correct": 1, "participant_id": 13}
@@ -226,6 +237,7 @@
 {"participant_id": 13, "image_id": "MullerLyer_str+028_diff+0.57877", "illusion_strength": 28.0, "true_diff": 0.57877, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str+028_diff+0.71641", "illusion_strength": 28.0, "true_diff": 0.71641, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str+028_diff+0.87429", "illusion_strength": 28.0, "true_diff": 0.87429, "response": "Top", "correct": 1}
+{"participant_id": 13, "image_id": "MullerLyer_str+028_diff+1.05382", "illusion_strength": 28.0, "true_diff": 1.05382, "response": "Top", "correct": 1}
 {"image_id": "MullerLyer_str+035_diff-0.46000", "illusion_strength": 35.0, "true_diff": -0.46, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str+035_diff-0.35870", "illusion_strength": 35.0, "true_diff": -0.3587, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str+035_diff-0.27349", "illusion_strength": 35.0, "true_diff": -0.27349, "response": "Bottom", "correct": 1, "participant_id": 13}
@@ -245,6 +257,7 @@
 {"participant_id": 13, "image_id": "MullerLyer_str+035_diff+0.57877", "illusion_strength": 35.0, "true_diff": 0.57877, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str+035_diff+0.71641", "illusion_strength": 35.0, "true_diff": 0.71641, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str+035_diff+0.87429", "illusion_strength": 35.0, "true_diff": 0.87429, "response": "Top", "correct": 1}
+{"participant_id": 13, "image_id": "MullerLyer_str+035_diff+1.05382", "illusion_strength": 35.0, "true_diff": 1.05382, "response": "Top", "correct": 1}
 {"image_id": "MullerLyer_str+042_diff-0.46000", "illusion_strength": 42.0, "true_diff": -0.46, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str+042_diff-0.35870", "illusion_strength": 42.0, "true_diff": -0.3587, "response": "Top", "correct": 0, "participant_id": 13}
 {"image_id": "MullerLyer_str+042_diff-0.27349", "illusion_strength": 42.0, "true_diff": -0.27349, "response": "Bottom", "correct": 1, "participant_id": 13}
@@ -264,6 +277,7 @@
 {"participant_id": 13, "image_id": "MullerLyer_str+042_diff+0.57877", "illusion_strength": 42.0, "true_diff": 0.57877, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str+042_diff+0.71641", "illusion_strength": 42.0, "true_diff": 0.71641, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str+042_diff+0.87429", "illusion_strength": 42.0, "true_diff": 0.87429, "response": "Top", "correct": 1}
+{"participant_id": 13, "image_id": "MullerLyer_str+042_diff+1.05382", "illusion_strength": 42.0, "true_diff": 1.05382, "response": "Top", "correct": 1}
 {"image_id": "MullerLyer_str+049_diff-0.46000", "illusion_strength": 49.0, "true_diff": -0.46, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str+049_diff-0.35870", "illusion_strength": 49.0, "true_diff": -0.3587, "response": "Bottom", "correct": 1, "participant_id": 13}
 {"image_id": "MullerLyer_str+049_diff-0.27349", "illusion_strength": 49.0, "true_diff": -0.27349, "response": "Bottom", "correct": 1, "participant_id": 13}
@@ -283,3 +297,4 @@
 {"participant_id": 13, "image_id": "MullerLyer_str+049_diff+0.57877", "illusion_strength": 49.0, "true_diff": 0.57877, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str+049_diff+0.71641", "illusion_strength": 49.0, "true_diff": 0.71641, "response": "Top", "correct": 1}
 {"participant_id": 13, "image_id": "MullerLyer_str+049_diff+0.87429", "illusion_strength": 49.0, "true_diff": 0.87429, "response": "Top", "correct": 1}
+{"participant_id": 13, "image_id": "MullerLyer_str+049_diff+1.05382", "illusion_strength": 49.0, "true_diff": 1.05382, "response": "Top", "correct": 1}

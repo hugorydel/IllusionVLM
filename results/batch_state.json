@@ -112,5 +112,6 @@
       "status": "validating",
       "output_file_id": null
     }
-  ]
+  ],
+  "status": "downloaded"
 }

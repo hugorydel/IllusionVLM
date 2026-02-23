@@ -493,10 +493,18 @@ def plot_psychometric_curves(
     )
     ax.set_ylim(-0.05, 1.05)
     ax.legend(
-        fontsize=8,
+        fontsize=7,
+        title="Illusion strength",
+        title_fontsize=7,
         loc="upper left",
-        title="Illusion strength  (red = incongruent, green = congruent)",
-        title_fontsize=8,
+        frameon=True,
+        borderpad=0.4,
+        # ncol=2,
+        labelspacing=0.3,
+        handlelength=1.2,
+        handletextpad=0.4,
+        # bbox_to_anchor=(1.02, 1),
+        # borderaxespad=0,
     )
     ax.grid(True, alpha=0.3)
     fig.tight_layout()
