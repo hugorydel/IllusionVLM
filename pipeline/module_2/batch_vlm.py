@@ -184,7 +184,7 @@ def build_single_request(
         "body": {
             "model": model,
             "temperature": temperature,
-            "max_completion_tokens": MAX_TOKENS,
+            "max_completion_tokens": MAX_TOKENS,  # must cover reasoning tokens; gpt-5.2 reasons on /v1/chat/completions regardless of reasoning_effort
             "response_format": response_format,
             "logprobs": True,
             "top_logprobs": 2,
@@ -392,12 +392,17 @@ def parse_batch_response(
 
 def cmd_submit(illusion: dict, args) -> None:
     name = illusion["name"]
-    image_dir = Path(args.image_dir)
+    image_dir = Path(args.image_dir) / name
     out_dir = participants_dir(name)
     s_path = state_path(name)
 
     try:
-        all_images = discover_images(image_dir, name)
+        all_images = discover_images(
+            image_dir,
+            name,
+            strengths=illusion.get("strengths"),
+            differences=illusion.get("differences"),
+        )
     except FileNotFoundError as e:
         print(f"Error: {e}")
         sys.exit(1)
