@@ -57,7 +57,7 @@ comparison/plotting time; no changes to stimuli or querying are needed.
 MODEL = "gpt-5.2"
 TEMPERATURE = 0.3
 REASONING_EFFORT = "none"  # "none"/"low"/"medium"/"high" for reasoning models; None for non-reasoning models (e.g. gpt-4o)
-N_PARTICIPANTS = 110
+N_PARTICIPANTS = 20
 MAX_TOKENS = 50
 MAX_CONCURRENCY = 100
 MAX_DIMENSIONS = 512
@@ -84,49 +84,49 @@ def _differences(positive: list[float]) -> list[float]:
 # ============================================================================
 
 ILLUSIONS = [
-    {
-        "name": "MullerLyer",
-        "pyllusion_class": "MullerLyer",
-        "strengths": _strengths(7.0),
-        "differences": _differences(
-            [0.04, 0.06565, 0.10044, 0.14575, 0.20297, 0.27349, 0.3587, 0.46]
-        )
-        + [0.57877, 0.71641, 0.87429, 1.05382],
-        "response_options": ["Top", "Bottom"],
-        "prompt": (
-            "Look at the two red horizontal lines in this image.\n\n"
-            "Which red line looks longer — the TOP one or the BOTTOM one?\n\n"
-            'Answer with only "Top" or "Bottom".'
-        ),
-    },
-    {
-        "name": "Ebbinghaus",
-        "pyllusion_class": "Ebbinghaus",
-        "strengths": _strengths(0.29),
-        "differences": _differences(
-            [0.07, 0.11066, 0.16462, 0.23378, 0.32001, 0.4252, 0.55124, 0.7]
-        ),
-        "response_options": ["Left", "Right"],
-        "prompt": (
-            "Look at the two red circles in the centre of each group in this image.\n\n"
-            "Which central red circle looks bigger — the LEFT one or the RIGHT one?\n\n"
-            'Answer with only "Left" or "Right".'
-        ),
-    },
-    {
-        "name": "Ponzo",
-        "pyllusion_class": "Ponzo",
-        "strengths": _strengths(3.6),
-        "differences": _differences(
-            [0.04, 0.06565, 0.10044, 0.14575, 0.20297, 0.27349, 0.3587, 0.46]
-        ),
-        "response_options": ["Top", "Bottom"],
-        "prompt": (
-            "Look at the two red horizontal lines in this image.\n\n"
-            "Which red line looks longer — the TOP one or the BOTTOM one?\n\n"
-            'Answer with only "Top" or "Bottom".'
-        ),
-    },
+    # {
+    #     "name": "MullerLyer",
+    #     "pyllusion_class": "MullerLyer",
+    #     "strengths": _strengths(7.0),
+    #     "differences": _differences(
+    #         [0.04, 0.06565, 0.10044, 0.14575, 0.20297, 0.27349, 0.3587, 0.46]
+    #     )
+    #     + [0.57877, 0.71641, 0.87429, 1.05382],
+    #     "response_options": ["Top", "Bottom"],
+    #     "prompt": (
+    #         "Look at the two red horizontal lines in this image.\n\n"
+    #         "Which red line looks longer — the TOP one or the BOTTOM one?\n\n"
+    #         'Answer with only "Top" or "Bottom".'
+    #     ),
+    # },
+    # {
+    #     "name": "Ebbinghaus",
+    #     "pyllusion_class": "Ebbinghaus",
+    #     "strengths": _strengths(0.29),
+    #     "differences": _differences(
+    #         [0.07, 0.11066, 0.16462, 0.23378, 0.32001, 0.4252, 0.55124, 0.7]
+    #     ),
+    #     "response_options": ["Left", "Right"],
+    #     "prompt": (
+    #         "Look at the two red circles in the centre of each group in this image.\n\n"
+    #         "Which central red circle looks bigger — the LEFT one or the RIGHT one?\n\n"
+    #         'Answer with only "Left" or "Right".'
+    #     ),
+    # },
+    # {
+    #     "name": "Ponzo",
+    #     "pyllusion_class": "Ponzo",
+    #     "strengths": _strengths(3.6),
+    #     "differences": _differences(
+    #         [0.04, 0.06565, 0.10044, 0.14575, 0.20297, 0.27349, 0.3587, 0.46]
+    #     ),
+    #     "response_options": ["Top", "Bottom"],
+    #     "prompt": (
+    #         "Look at the two red horizontal lines in this image.\n\n"
+    #         "Which red line looks longer — the TOP one or the BOTTOM one?\n\n"
+    #         'Answer with only "Top" or "Bottom".'
+    #     ),
+    # },
     {
         "name": "VerticalHorizontal",
         "pyllusion_class": "VerticalHorizontal",

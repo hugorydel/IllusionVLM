@@ -390,12 +390,17 @@ def parse_batch_response(
 
 def cmd_submit(illusion: dict, args) -> None:
     name = illusion["name"]
-    image_dir = Path(args.image_dir)
+    image_dir = Path(args.image_dir) / name
     out_dir = participants_dir(name)
     s_path = state_path(name)
 
     try:
-        all_images = discover_images(image_dir, name)
+        all_images = discover_images(
+            image_dir,
+            name,
+            strengths=illusion.get("strengths"),
+            differences=illusion.get("differences"),
+        )
     except FileNotFoundError as e:
         print(f"Error: {e}")
         sys.exit(1)

@@ -1,0 +1,37 @@
+{
+  "illusion_name": "VerticalHorizontal",
+  "submitted_at": "2026-03-20T15:43:27.896801+00:00",
+  "n_participants_target": 20,
+  "model": "gpt-5.2",
+  "batches": [
+    {
+      "batch_id": "batch_69bd6b1f72e88190b94a4396afbaedc4",
+      "input_file_id": "file-5s7qzAYpfh94py2TBvQwe4",
+      "participant_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "status": "validating",
+      "output_file_id": null
+    }
+  ],
+  "status": "submitted"
+}

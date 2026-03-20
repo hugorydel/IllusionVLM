@@ -37,9 +37,13 @@ def make_filename(illusion_name: str, strength: float, diff: float) -> str:
     """
     s_sign = "-" if strength < 0 else "+"
     d_sign = "-" if diff < 0 else "+"
+    abs_s = abs(strength)
+    # Use integer formatting for whole-number strengths (e.g. MullerLyer: 7, 14, 49)
+    # and float formatting for fractional strengths (e.g. Ebbinghaus: 0.29, 0.58;
+    # VerticalHorizontal: 9.5, 28.5). Preserves existing filenames for integer illusions.
+    strength_str = f"{int(abs_s):03d}" if abs_s == int(abs_s) else f"{abs_s:.5f}"
     return (
-        f"{illusion_name}_str{s_sign}{abs(int(strength)):03d}"
-        f"_diff{d_sign}{abs(diff):.5f}.png"
+        f"{illusion_name}_str{s_sign}{strength_str}" f"_diff{d_sign}{abs(diff):.5f}.png"
     )
 
 
