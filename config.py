@@ -85,18 +85,18 @@ ILLUSIONS = [
             'Answer with only "Top" or "Bottom".'
         ),
     },
-    {
-        "name": "Ebbinghaus",
-        "pyllusion_class": "Ebbinghaus",
-        "strengths": _STRENGTHS,
-        "differences": _DIFFERENCES,
-        "response_options": ["Left", "Right"],
-        "prompt": (
-            "Look at the two central circles in this image.\n\n"
-            "Which central circle looks bigger — the LEFT one or the RIGHT one?\n\n"
-            'Answer with only "Left" or "Right".'
-        ),
-    },
+    # {
+    #     "name": "Ebbinghaus",
+    #     "pyllusion_class": "Ebbinghaus",
+    #     "strengths": _STRENGTHS,
+    #     "differences": _DIFFERENCES,
+    #     "response_options": ["Left", "Right"],
+    #     "prompt": (
+    #         "Look at the two central circles in this image.\n\n"
+    #         "Which central circle looks bigger — the LEFT one or the RIGHT one?\n\n"
+    #         'Answer with only "Left" or "Right".'
+    #     ),
+    # },
     # {
     #     "name": "VerticalHorizontal",
     #     "pyllusion_class": "VerticalHorizontal",

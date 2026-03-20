@@ -2,14 +2,15 @@
 pipeline/module_3_analyse.py - Module 3: Psychometric fitting and visualisation.
 
 Iterates the illusion registry. For each illusion:
-  1. Loads all participant JSONL files from results/<name>/participants/
+  1. Loads all participant JSONL files from results/<n>/participants/
   2. Fits cumulative Gaussian psychometric functions per strength level
   3. Extracts PSE values and saves pse_summary.csv + psychometric_data.csv
-  4. Generates fig1_psychometric_curves.png and fig2_pse_vs_strength.png
+  4. Generates fig1_error_by_difficulty.png, fig2_pse_vs_strength.png,
+     and fig3_psychometric_curves.png
 
 Skip logic:
-  If both pse_summary.csv and the two figures already exist for an illusion,
-  that illusion is skipped unless force=True is passed.
+  If all expected outputs already exist for an illusion, that illusion is
+  skipped unless force=True is passed.
 """
 
 from pathlib import Path
@@ -26,8 +27,9 @@ def _is_complete(illusion_name: str) -> bool:
     expected = [
         base / "pse_summary.csv",
         base / "psychometric_data.csv",
-        base / "figures" / "fig1_psychometric_curves.png",
+        base / "figures" / "fig1_error_by_difficulty.png",
         base / "figures" / "fig2_pse_vs_strength.png",
+        base / "figures" / "fig3_psychometric_curves.png",
     ]
     return all(p.exists() for p in expected)
 
@@ -52,9 +54,17 @@ def run(illusions: list[dict], force: bool = False) -> None:
             print(f"  ✓ Already complete — skipping. (Use force=True to rerun.)")
             continue
 
+        participants_dir = RESULTS_ROOT / name / "participants"
+
         try:
             psych_data, pse_summary = run_fitting(illusion, RESULTS_ROOT)
-            run_plotting(illusion, psych_data, pse_summary, RESULTS_ROOT)
+            run_plotting(
+                illusion=illusion,
+                psych_data=psych_data,
+                pse_summary=pse_summary,
+                results_root=RESULTS_ROOT,
+                participants_dir=participants_dir,
+            )
         except (FileNotFoundError, ValueError) as e:
             print(f"  ✗ Skipping {name}: {e}")
             continue
