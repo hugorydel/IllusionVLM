@@ -14,6 +14,7 @@ from typing import Any
 
 from openai import AsyncOpenAI
 
+from config import REASONING_EFFORT
 from pipeline.module_2.response_schema import make_schema
 from pipeline.utils import compute_correct, extract_binary_logprobs, parse_filename
 
@@ -76,9 +77,8 @@ class VLMQuerier:
         """
         for attempt in range(self.max_retries):
             try:
-                response = await self.client.responses.create(
+                kwargs = dict(
                     model=self.model,
-                    temperature=self.temperature,
                     max_output_tokens=self.max_tokens,
                     input=[
                         {
@@ -92,12 +92,21 @@ class VLMQuerier:
                             ],
                         }
                     ],
-                    text={
-                        "format": self._schema,
-                        "logprobs": True,
-                        "top_logprobs": 2,
-                    },
+                    text={"format": self._schema},
+                    top_logprobs=2,
+                    include=["message.output_text.logprobs"],
                 )
+                if REASONING_EFFORT is not None:
+                    # Reasoning model: always pass reasoning effort.
+                    # effort="none" disables the reasoning chain and unlocks temperature.
+                    kwargs["reasoning"] = {"effort": REASONING_EFFORT}
+                    if REASONING_EFFORT == "none":
+                        kwargs["temperature"] = self.temperature
+                    # For "low"/"medium"/"high", temperature is unsupported — omit it.
+                else:
+                    # Non-reasoning model (e.g. gpt-4o): temperature only, no reasoning.
+                    kwargs["temperature"] = self.temperature
+                response = await self.client.responses.create(**kwargs)
 
                 if not response.output_text:
                     raise ValueError(f"Empty output_text. Full response: {response}")

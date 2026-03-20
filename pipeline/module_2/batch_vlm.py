@@ -49,7 +49,6 @@ from pipeline.module_2.response_schema import make_chat_completions_schema
 from pipeline.utils import (
     compute_correct,
     discover_images,
-    extract_binary_logprobs,
     parse_filename,
     preprocess_image,
 )

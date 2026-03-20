@@ -17,7 +17,6 @@ def make_schema(response_options: list[str]) -> dict:
         Schema dict suitable for the ``text.format`` field of the
         Responses API ``responses.create()`` call.
     """
-    option_a, option_b = response_options
     name = f"forced_choice_{'_'.join(opt.lower() for opt in response_options)}"
 
     return {
@@ -31,9 +30,6 @@ def make_schema(response_options: list[str]) -> dict:
                 "response": {
                     "type": "string",
                     "enum": response_options,
-                    "description": (
-                        f"Which option looks greater: " f'"{option_a}" or "{option_b}".'
-                    ),
                 },
             },
             "required": ["image_id", "response"],

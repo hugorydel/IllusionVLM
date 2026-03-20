@@ -54,9 +54,10 @@ comparison/plotting time; no changes to stimuli or querying are needed.
 # MODEL CONFIGURATION
 # ============================================================================
 
-MODEL = "gpt-5"
+MODEL = "gpt-5.2"
 TEMPERATURE = 0.3
-N_PARTICIPANTS = 100
+REASONING_EFFORT = "none"  # "none"/"low"/"medium"/"high" for reasoning models; None for non-reasoning models (e.g. gpt-4o)
+N_PARTICIPANTS = 20
 MAX_TOKENS = 50
 MAX_CONCURRENCY = 20
 MAX_DIMENSIONS = 512
