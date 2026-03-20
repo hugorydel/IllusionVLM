@@ -57,8 +57,8 @@ comparison/plotting time; no changes to stimuli or querying are needed.
 MODEL = "gpt-5.2"
 TEMPERATURE = 0.3
 REASONING_EFFORT = "none"  # "none"/"low"/"medium"/"high" for reasoning models; None for non-reasoning models (e.g. gpt-4o)
-N_PARTICIPANTS = 20
-MAX_TOKENS = 50
+N_PARTICIPANTS = 30
+MAX_TOKENS = 200  # Limit is 200 because some image titles are 50-100 tokens long; this limit accomodates them.
 MAX_CONCURRENCY = 100
 MAX_DIMENSIONS = 512
 MAX_BATCH_BYTES: int = 190 * 1024 * 1024  # 190 MB — safely under OpenAI 200 MB limit
@@ -118,8 +118,25 @@ ILLUSIONS = [
     #     "pyllusion_class": "Ponzo",
     #     "strengths": _strengths(3.6),
     #     "differences": _differences(
-    #         [0.04, 0.06565, 0.10044, 0.14575, 0.20297, 0.27349, 0.3587, 0.46]
-    #     ),
+    #         [
+    #             0.04,
+    #             0.052,
+    #             0.06565,
+    #             0.082,
+    #             0.10044,
+    #             0.123,
+    #             0.14575,
+    #             0.173,
+    #             0.20297,
+    #             0.238,
+    #             0.27349,
+    #             0.315,
+    #             0.3587,
+    #             0.41,
+    #             0.46,
+    #         ]
+    #     )
+    #     + [0.56, 0.67],
     #     "response_options": ["Top", "Bottom"],
     #     "prompt": (
     #         "Look at the two red horizontal lines in this image.\n\n"
@@ -127,20 +144,21 @@ ILLUSIONS = [
     #         'Answer with only "Top" or "Bottom".'
     #     ),
     # },
-    {
-        "name": "VerticalHorizontal",
-        "pyllusion_class": "VerticalHorizontal",
-        "strengths": _strengths(9.5),
-        "differences": _differences(
-            [0.03, 0.04772, 0.06953, 0.09544, 0.12544, 0.15953, 0.19772, 0.24]
-        ),
-        "response_options": ["Vertical", "Horizontal"],
-        "prompt": (
-            "Look at the two red lines in this image.\n\n"
-            "Which red line looks longer — the VERTICAL one or the HORIZONTAL one?\n\n"
-            'Answer with only "Vertical" or "Horizontal".'
-        ),
-    },
+    # {
+    #     "name": "VerticalHorizontal",
+    #     "pyllusion_class": "VerticalHorizontal",
+    #     "strengths": _strengths(9.5),
+    #     "differences": _differences(
+    #         [0.03, 0.04772, 0.06953, 0.09544, 0.12544, 0.15953, 0.19772, 0.24]
+    #     )
+    #     + [0.32, 0.42, 0.54, 0.70],
+    #     "response_options": ["Left", "Right"],
+    #     "prompt": (
+    #         "Look at the two red lines in this image.\n\n"
+    #         "Which red line looks longer — the LEFT one or the RIGHT one?\n\n"
+    #         'Answer with only "Left" or "Right".'
+    #     ),
+    # },
     # {
     #     "name": "Zollner",
     #     "pyllusion_class": "Zollner",
