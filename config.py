@@ -101,7 +101,7 @@ ILLUSIONS = [
     {
         "name": "Ebbinghaus",
         "pyllusion_class": "Ebbinghaus",
-        "strengths": _strengths(0.29) + [round(0.29 * k, 5) for k in range(8, 13)],
+        "strengths": _strengths(0.29),
         "differences": _differences(
             [0.07, 0.11066, 0.16462, 0.23378, 0.32001, 0.4252, 0.55124, 0.7]
         ),
