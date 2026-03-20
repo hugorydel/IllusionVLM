@@ -234,9 +234,14 @@ def plot_pse_vs_strength(
     """
     Figure 2: PSE (±SE) vs. illusion strength with fit-quality classification.
 
-      Good fit  — PSE well within the tested Δ range        → solid marker
+      Good fit  — PSE well within the tested Δ range and SE ≤ Δ range width
+                  → solid marker
       Edge fit  — PSE within 10% of boundary                → hollow marker
-      Failed    — curve_fit did not converge                 → dotted vline
+      Failed    — fit failed, PSE outside range, or SE > Δ range width
+                  → dotted vline (excluded from trend line)
+
+    Y-axis is clipped to the tested Δ boundary so that a single outlier
+    with a runaway SE cannot compress the rest of the plot.
     """
     name = illusion["name"]
     df = pse_summary.copy()
@@ -244,10 +249,14 @@ def plot_pse_vs_strength(
 
     diff_min = float(psych_data["true_diff"].min())
     diff_max = float(psych_data["true_diff"].max())
-    margin = 0.10 * (diff_max - diff_min)
+    delta_range = diff_max - diff_min
+    margin = 0.10 * delta_range
 
     def _classify(row):
         if not row["fit_success"] or np.isnan(row["pse"]):
+            return "failed"
+        # SE larger than the full tested Δ range indicates an unconstrained fit
+        if not np.isnan(row["pse_se"]) and row["pse_se"] > delta_range:
             return "failed"
         if row["pse"] <= diff_min + margin or row["pse"] >= diff_max - margin:
             return "edge"
@@ -303,7 +312,7 @@ def plot_pse_vs_strength(
             linestyle=":",
             color="#cc3333",
             linewidth=1.5,
-            label="Fit failed — PSE outside tested Δ range",
+            label="Fit failed / SE too large — excluded from trend",
         )
 
     if len(good) >= 3:
@@ -346,6 +355,11 @@ def plot_pse_vs_strength(
         alpha=0.5,
         label="No bias (PSE = 0)",
     )
+
+    # Clip y-axis to tested Δ boundary — prevents runaway SE bars from
+    # compressing all other points into a flat line.
+    y_pad = margin * 2
+    ax.set_ylim(diff_min - y_pad, diff_max + y_pad)
 
     ax.set_xlabel("Illusion strength", fontsize=12)
     ax.set_ylabel("PSE  (physical difference at 50% threshold)", fontsize=12)

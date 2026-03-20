@@ -22,7 +22,12 @@ RESULTS_ROOT = Path("results")
 
 
 def _is_complete(illusion_name: str) -> bool:
-    """Return True if all expected outputs already exist for this illusion."""
+    """
+    Return True if all expected outputs exist AND are newer than all participant files.
+
+    If any participant file is newer than the oldest output, new data has been
+    added since the last analysis run and a rerun is needed.
+    """
     base = RESULTS_ROOT / illusion_name
     expected = [
         base / "pse_summary.csv",
@@ -31,7 +36,28 @@ def _is_complete(illusion_name: str) -> bool:
         base / "figures" / "fig2_pse_vs_strength.png",
         base / "figures" / "fig3_psychometric_curves.png",
     ]
-    return all(p.exists() for p in expected)
+
+    # All outputs must exist
+    if not all(p.exists() for p in expected):
+        return False
+
+    # Find the oldest output modification time
+    oldest_output_mtime = min(p.stat().st_mtime for p in expected)
+
+    # Find all participant files
+    participants_dir = base / "participants"
+    participant_files = (
+        list(participants_dir.glob("participant_*.jsonl"))
+        if participants_dir.exists()
+        else []
+    )
+
+    if not participant_files:
+        return True  # No participant files yet — outputs are up to date
+
+    # If any participant file is newer than the oldest output, rerun needed
+    newest_participant_mtime = max(p.stat().st_mtime for p in participant_files)
+    return newest_participant_mtime <= oldest_output_mtime
 
 
 def run(illusions: list[dict], force: bool = False) -> None:
