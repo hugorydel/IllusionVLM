@@ -37,13 +37,9 @@ def make_filename(illusion_name: str, strength: float, diff: float) -> str:
     """
     s_sign = "-" if strength < 0 else "+"
     d_sign = "-" if diff < 0 else "+"
-    abs_s = abs(strength)
-    # Use integer formatting for whole-number strengths (e.g. MullerLyer: 7, 14, 49)
-    # and float formatting for fractional strengths (e.g. Ebbinghaus: 0.29, 0.58)
-    # This preserves existing MullerLyer filenames while correctly encoding all illusions.
-    strength_str = f"{int(abs_s):03d}" if abs_s == int(abs_s) else f"{abs_s:.5f}"
     return (
-        f"{illusion_name}_str{s_sign}{strength_str}" f"_diff{d_sign}{abs(diff):.5f}.png"
+        f"{illusion_name}_str{s_sign}{abs(int(strength)):03d}"
+        f"_diff{d_sign}{abs(diff):.5f}.png"
     )
 
 
@@ -63,16 +59,34 @@ def parse_filename(stem: str) -> tuple[str, float, float]:
     return illusion_name, strength, diff
 
 
-def discover_images(image_dir: Path, illusion_name: str) -> list[str]:
+def discover_images(
+    image_dir: Path,
+    illusion_name: str,
+    strengths: list[float] | None = None,
+    differences: list[float] | None = None,
+) -> list[str]:
     """
-    Discover all stimulus PNGs for a given illusion in image_dir.
+    Discover stimulus PNGs for a given illusion, filtered to only the
+    (strength, difference) pairs defined in the config.
+
+    Without filters this would return everything on disk, including stimuli
+    from prior runs with different grids — causing participants to be queried
+    on images outside the current experiment design.
+
+    Args:
+        image_dir:    Directory containing stimulus PNGs.
+        illusion_name: Illusion name prefix (e.g. 'MullerLyer').
+        strengths:    Whitelist of illusion_strength values from config.
+                      If None, all strengths on disk are accepted.
+        differences:  Whitelist of true_diff values from config.
+                      If None, all differences on disk are accepted.
 
     Returns:
-        List of image ID stems (filenames without extension), sorted by
+        List of image ID stems matching the config grid, sorted by
         (illusion_strength, true_diff).
 
     Raises:
-        FileNotFoundError: if image_dir doesn't exist or contains no matching files.
+        FileNotFoundError: if image_dir doesn't exist or no matching files found.
     """
     if not image_dir.exists():
         raise FileNotFoundError(f"Image directory not found: {image_dir}")
@@ -86,7 +100,25 @@ def discover_images(image_dir: Path, illusion_name: str) -> list[str]:
             "Run Module 1 (generate) first."
         )
 
-    image_ids = [f.stem for f in png_files]
+    # Build tolerance sets for float comparison
+    strength_set = {round(s, 5) for s in strengths} if strengths is not None else None
+    diff_set = {round(d, 5) for d in differences} if differences is not None else None
+
+    image_ids = []
+    for f in png_files:
+        _, s, d = parse_filename(f.stem)
+        if strength_set is not None and round(s, 5) not in strength_set:
+            continue
+        if diff_set is not None and round(d, 5) not in diff_set:
+            continue
+        image_ids.append(f.stem)
+
+    if not image_ids:
+        raise FileNotFoundError(
+            f"No stimuli matching the configured grid found in {image_dir}. "
+            "Run Module 1 (generate) first."
+        )
+
     image_ids.sort(key=lambda s: parse_filename(s)[1:])  # sort by (strength, diff)
     return image_ids
 

@@ -154,7 +154,12 @@ async def query_illusion(
     err_dir = _errors_dir(name)
 
     try:
-        all_images = discover_images(image_dir, name)
+        all_images = discover_images(
+            image_dir,
+            name,
+            strengths=illusion.get("strengths"),
+            differences=illusion.get("differences"),
+        )
     except FileNotFoundError as e:
         print(f"  Error: {e}")
         return

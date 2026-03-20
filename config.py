@@ -57,7 +57,7 @@ comparison/plotting time; no changes to stimuli or querying are needed.
 MODEL = "gpt-5.2"
 TEMPERATURE = 0.3
 REASONING_EFFORT = "none"  # "none"/"low"/"medium"/"high" for reasoning models; None for non-reasoning models (e.g. gpt-4o)
-N_PARTICIPANTS = 20
+N_PARTICIPANTS = 110
 MAX_TOKENS = 50
 MAX_CONCURRENCY = 100
 MAX_DIMENSIONS = 512
@@ -90,7 +90,8 @@ ILLUSIONS = [
         "strengths": _strengths(7.0),
         "differences": _differences(
             [0.04, 0.06565, 0.10044, 0.14575, 0.20297, 0.27349, 0.3587, 0.46]
-        ),
+        )
+        + [0.57877, 0.71641, 0.87429, 1.05382],
         "response_options": ["Top", "Bottom"],
         "prompt": (
             "Look at the two red horizontal lines in this image.\n\n"
@@ -126,20 +127,20 @@ ILLUSIONS = [
             'Answer with only "Top" or "Bottom".'
         ),
     },
-    # {
-    #     "name": "VerticalHorizontal",
-    #     "pyllusion_class": "VerticalHorizontal",
-    #     "strengths": _strengths(9.5),
-    #     "differences": _differences(
-    #         [0.03, 0.04772, 0.06953, 0.09544, 0.12544, 0.15953, 0.19772, 0.24]
-    #     ),
-    #     "response_options": ["Vertical", "Horizontal"],
-    #     "prompt": (
-    #         "Look at the two red lines in this image.\n\n"
-    #         "Which red line looks longer — the VERTICAL one or the HORIZONTAL one?\n\n"
-    #         'Answer with only "Vertical" or "Horizontal".'
-    #     ),
-    # },
+    {
+        "name": "VerticalHorizontal",
+        "pyllusion_class": "VerticalHorizontal",
+        "strengths": _strengths(9.5),
+        "differences": _differences(
+            [0.03, 0.04772, 0.06953, 0.09544, 0.12544, 0.15953, 0.19772, 0.24]
+        ),
+        "response_options": ["Vertical", "Horizontal"],
+        "prompt": (
+            "Look at the two red lines in this image.\n\n"
+            "Which red line looks longer — the VERTICAL one or the HORIZONTAL one?\n\n"
+            'Answer with only "Vertical" or "Horizontal".'
+        ),
+    },
     # {
     #     "name": "Zollner",
     #     "pyllusion_class": "Zollner",
