@@ -144,21 +144,21 @@ ILLUSIONS = [
     #         'Answer with only "Top" or "Bottom".'
     #     ),
     # },
-    # {
-    #     "name": "VerticalHorizontal",
-    #     "pyllusion_class": "VerticalHorizontal",
-    #     "strengths": _strengths(9.5),
-    #     "differences": _differences(
-    #         [0.03, 0.04772, 0.06953, 0.09544, 0.12544, 0.15953, 0.19772, 0.24]
-    #     )
-    #     + [0.32, 0.42, 0.54, 0.70],
-    #     "response_options": ["Left", "Right"],
-    #     "prompt": (
-    #         "Look at the two red lines in this image.\n\n"
-    #         "Which red line looks longer — the LEFT one or the RIGHT one?\n\n"
-    #         'Answer with only "Left" or "Right".'
-    #     ),
-    # },
+    {
+        "name": "VerticalHorizontal",
+        "pyllusion_class": "VerticalHorizontal",
+        "strengths": _strengths(9.5),
+        "differences": _differences(
+            [0.03, 0.04772, 0.06953, 0.09544, 0.12544, 0.15953, 0.19772, 0.24]
+        )
+        + [0.32, 0.42, 0.54, 0.70],
+        "response_options": ["Left", "Right"],
+        "prompt": (
+            "Look at the two red lines in this image.\n\n"
+            "Which red line looks longer — the LEFT one or the RIGHT one?\n\n"
+            'Answer with only "Left" or "Right".'
+        ),
+    },
     # {
     #     "name": "Zollner",
     #     "pyllusion_class": "Zollner",

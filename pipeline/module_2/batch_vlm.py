@@ -565,12 +565,14 @@ def cmd_download(illusion: dict, args) -> None:
     records_by_participant: dict[int, list[dict]] = {}
     total_ok = total_fail = 0
 
+    skipped_batches = 0
     for i, b in enumerate(batches, 1):
         print(f"\nSub-batch {i}/{len(batches)}: {b['batch_id']}")
         batch = client.batches.retrieve(b["batch_id"])
 
         if batch.status != "completed":
             print(f"  [SKIP] Status is '{batch.status}' — not yet complete.")
+            skipped_batches += 1
             continue
 
         raw = client.files.content(batch.output_file_id).text
@@ -629,8 +631,16 @@ def cmd_download(illusion: dict, args) -> None:
     print(f"  Total failed         : {total_fail}")
     print("=" * 60)
 
-    # Clean up _batch_tmp/ now that all participant files are written
-    cleanup_batch_tmp(name)
+    # Only clean up _batch_tmp/ if every sub-batch was successfully downloaded.
+    # If any were skipped (not yet complete), preserve the state file so the
+    # user can run --batch download again once the remaining batches finish.
+    if skipped_batches == 0:
+        cleanup_batch_tmp(name)
+    else:
+        print(
+            f"\n  ⚠ {skipped_batches} sub-batch(es) were not yet complete — state file preserved."
+        )
+        print(f"  Run '--batch download' again once all batches have finished.")
 
 
 # ============================================================================
