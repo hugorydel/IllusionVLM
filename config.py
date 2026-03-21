@@ -57,7 +57,7 @@ comparison/plotting time; no changes to stimuli or querying are needed.
 MODEL = "gpt-5.2"
 TEMPERATURE = 0.3
 REASONING_EFFORT = "none"  # "none"/"low"/"medium"/"high" for reasoning models; None for non-reasoning models (e.g. gpt-4o)
-N_PARTICIPANTS = 30
+N_PARTICIPANTS = 100
 MAX_TOKENS = 200  # Limit is 200 because some image titles are 50-100 tokens long; this limit accomodates them.
 MAX_CONCURRENCY = 100
 MAX_DIMENSIONS = 512
@@ -120,23 +120,17 @@ ILLUSIONS = [
     #     "differences": _differences(
     #         [
     #             0.04,
-    #             0.052,
     #             0.06565,
-    #             0.082,
     #             0.10044,
-    #             0.123,
     #             0.14575,
-    #             0.173,
     #             0.20297,
-    #             0.238,
     #             0.27349,
-    #             0.315,
     #             0.3587,
-    #             0.41,
     #             0.46,
     #         ]
     #     )
-    #     + [0.56, 0.67],
+    #     #    + [0.052, 0.082, 0.123, 0.173, 0.238, 0.315, 0.41,0.56, 0.67], # Early sensitivity testing in participants 0-50. Exclude in the future; no effects observed.
+    #     ,
     #     "response_options": ["Top", "Bottom"],
     #     "prompt": (
     #         "Look at the two red horizontal lines in this image.\n\n"
@@ -147,7 +141,9 @@ ILLUSIONS = [
     {
         "name": "VerticalHorizontal",
         "pyllusion_class": "VerticalHorizontal",
-        "strengths": _strengths(9.5),
+        "strengths": _strengths(
+            9.5
+        ),  # added 3 values to strengths, to help characterize the finer transitions where the PSE rises most steeply. + [4.75, 14.25, 23.75]
         "differences": _differences(
             [0.03, 0.04772, 0.06953, 0.09544, 0.12544, 0.15953, 0.19772, 0.24]
         )
