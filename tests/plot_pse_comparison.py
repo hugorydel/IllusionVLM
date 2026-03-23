@@ -52,11 +52,13 @@ LOESS_FRAC = 0.4
 RIBBON_CLIP = 0.20
 
 # Per-illusion y-axis limits [ymin, ymax].
-# Set to None to use automatic limits.
-YLIM: dict[str, tuple[float, float] | None] = {
-    "MullerLyer": None,
-    "Ponzo": (-0.15, 0.60),
-    "VerticalHorizontal": (-0.15, 0.60),
+# Set to None for fully automatic limits.
+# Either value in the tuple can be None to fix only one bound
+# (e.g. (-0.15, None) pins the bottom while leaving the top auto).
+YLIM: dict[str, tuple[float | None, float | None] | None] = {
+    "MullerLyer": (-0.07, 0.60),
+    "Ponzo": (-0.07, 0.60),
+    "VerticalHorizontal": (-0.07, 0.60),
 }
 
 # Greyscale palette
@@ -202,7 +204,11 @@ def plot_panel(
     # ── Per-illusion y-axis limits ────────────────────────────────────────────
     ylim = YLIM.get(folder)
     if ylim is not None:
-        ax.set_ylim(ylim)
+        ymin, ymax = ylim
+        if ymin is not None:
+            ax.set_ylim(bottom=ymin)
+        if ymax is not None:
+            ax.set_ylim(top=ymax)
 
 
 # ============================================================================
