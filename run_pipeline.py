@@ -10,23 +10,27 @@ REAL-TIME QUERYING (default):
     python run_pipeline.py --illusion MullerLyer   # single illusion
     python run_pipeline.py --modules 1             # stimulus generation only
     python run_pipeline.py --modules 2 3           # query + analyse, skip generation
-    python run_pipeline.py --modules 3 4           # any subset of modules
     python run_pipeline.py --force                 # regenerate existing stimuli (M1)
     python run_pipeline.py --dry-run               # print plan, no API calls (M2)
 
 BATCH API (~50% cheaper, results in up to 24h):
     python run_pipeline.py --batch submit          # M1 + submit jobs to OpenAI
     python run_pipeline.py --batch status          # check job progress
-    python run_pipeline.py --batch download        # download results + run M3
+    python run_pipeline.py --batch download        # download completed batches + run M3
 
     Add --illusion NAME to any batch command to restrict to one illusion.
     Add --modules to batch submit to control whether M1 runs (e.g. --modules 2).
     Add --dry-run to 'batch submit' to preview without API calls.
+
+    download is selective: only illusions with an existing _batch_tmp/batch_state.json
+    are attempted; others are silently skipped.
 """
 
 import argparse
+import getpass
 import sys
 import types
+from pathlib import Path
 
 from config import (
     ILLUSIONS,
@@ -38,6 +42,7 @@ from config import (
 )
 
 ALL_MODULES = [1, 2, 3]
+RESULTS_ROOT = Path("results")
 
 
 def main():
@@ -146,6 +151,10 @@ def main():
 # ============================================================================
 
 
+def _state_file(illusion_name: str) -> Path:
+    return RESULTS_ROOT / illusion_name / "_batch_tmp" / "batch_state.json"
+
+
 def _run_batch(illusions: list[dict], args, modules: set[int]) -> None:
     """
     Route --batch submit/status/download to batch_vlm.py functions.
@@ -172,6 +181,12 @@ def _run_batch(illusions: list[dict], args, modules: set[int]) -> None:
             print("━" * 60)
             generate(illusions, force=args.force)
 
+        api_key = getpass.getpass("\nEnter your OpenAI API key (input hidden): ")
+        if not api_key.strip():
+            print("Error: No API key provided.")
+            sys.exit(1)
+        print("  ✓ API key received")
+
         batch_args = types.SimpleNamespace(
             n_participants=N_PARTICIPANTS,
             image_dir="./stimuli",
@@ -180,6 +195,7 @@ def _run_batch(illusions: list[dict], args, modules: set[int]) -> None:
             max_dimension=MAX_DIMENSIONS,
             jpeg_quality=JPEG_QUALITY,
             dry_run=args.dry_run,
+            api_key=api_key.strip(),
         )
 
         print("\n" + "━" * 60)
@@ -197,14 +213,34 @@ def _run_batch(illusions: list[dict], args, modules: set[int]) -> None:
         print(f"Download results: python run_pipeline.py --batch download{ill_flag}")
 
     elif phase == "status":
-        batch_args = types.SimpleNamespace()
+        api_key = getpass.getpass("\nEnter your OpenAI API key (input hidden): ")
+        if not api_key.strip():
+            print("Error: No API key provided.")
+            sys.exit(1)
+        print("  ✓ API key received")
+        batch_args = types.SimpleNamespace(api_key=api_key.strip())
         for illusion in illusions:
             print(f"\n{'━' * 60}")
             cmd_status(illusion, batch_args)
 
     elif phase == "download":
-        batch_args = types.SimpleNamespace()
-        for illusion in illusions:
+        # Only process illusions that have an active batch state file.
+        pending = [ill for ill in illusions if _state_file(ill["name"]).exists()]
+        skipped = [ill["name"] for ill in illusions if ill not in pending]
+        if skipped:
+            print(f"  Skipping (no pending batch): {', '.join(skipped)}")
+        if not pending:
+            print("\n  Nothing to download.")
+            return
+
+        api_key = getpass.getpass("\nEnter your OpenAI API key (input hidden): ")
+        if not api_key.strip():
+            print("Error: No API key provided.")
+            sys.exit(1)
+        print("  ✓ API key received")
+        batch_args = types.SimpleNamespace(api_key=api_key.strip())
+
+        for illusion in pending:
             print(f"\n{'━' * 60}")
             print(f"  Downloading: {illusion['name']}")
             print(f"{'━' * 60}")
@@ -213,7 +249,7 @@ def _run_batch(illusions: list[dict], args, modules: set[int]) -> None:
         print("\n" + "━" * 60)
         print("MODULE 3 — PSYCHOMETRIC ANALYSIS")
         print("━" * 60)
-        analyse(illusions)
+        analyse(pending)
 
         print("\n" + "=" * 60)
         print("BATCH DOWNLOAD + ANALYSIS COMPLETE")
