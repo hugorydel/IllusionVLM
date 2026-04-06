@@ -57,7 +57,7 @@ comparison/plotting time; no changes to stimuli or querying are needed.
 MODEL = "gpt-5.2"
 TEMPERATURE = 0.3
 REASONING_EFFORT = "none"  # "none"/"low"/"medium"/"high" for reasoning models; None for non-reasoning models (e.g. gpt-4o)
-N_PARTICIPANTS = 5
+N_PARTICIPANTS = 25
 MAX_TOKENS = 200  # Limit is 200 because some illusion names are 50-100 tokens long; this limit accommodates them.
 MAX_CONCURRENCY = 100
 MAX_DIMENSIONS = 512
@@ -161,22 +161,6 @@ ILLUSIONS = [
         ),
     },
     # {
-    #     "name": "Zollner",
-    #     "pyllusion_class": "Zollner",
-    #     "strengths": _strengths(11.0),
-    #     "differences": _differences(
-    #         [0.15, 0.32141, 0.58988, 0.97717, 1.50505, 2.19531, 3.0697, 4.15]
-    #     ),
-    #     # NOTE: Flip the x-axis when comparing against Makowski human data for this illusion.
-    #     "response_options": ["Left", "Right"],
-    #     "prompt": (
-    #         "Look at the two long red lines in this image.\n\n"
-    #         "In which direction do the two red lines appear to converge — "
-    #         "the LEFT or the RIGHT?\n\n"
-    #         'Answer with only "Left" or "Right".'
-    #     ),
-    # },
-    # {
     #     "name": "Poggendorff",
     #     "pyllusion_class": "Poggendorff",
     #     "strengths": _strengths(6.4),
@@ -193,19 +177,35 @@ ILLUSIONS = [
     #     ),
     # },
     # {
-    #     "name": "RodFrame",
-    #     "pyllusion_class": "RodFrame",
-    #     "strengths": _strengths(2.0),
+    #     "name": "Zollner",
+    #     "pyllusion_class": "Zollner",
+    #     "strengths": _strengths(11.0),
     #     "differences": _differences(
-    #         [0.06, 0.34882, 0.87661, 1.64336, 2.64907, 3.89375, 5.37739, 7.1]
+    #         [0.15, 0.32141, 0.58988, 0.97717, 1.50505, 2.19531, 3.0697, 4.15]
     #     ),
+    #     # NOTE: Flip the x-axis when comparing against Makowski human data for this illusion.
     #     "response_options": ["Left", "Right"],
     #     "prompt": (
-    #         "Look at the red rod (line) inside the tilted frame in this image.\n\n"
-    #         "Is the red rod tilted to the LEFT or to the RIGHT of vertical?\n\n"
+    #         "Look at the two long red lines in this image.\n\n"
+    #         "In which direction do the two red lines appear to converge — "
+    #         "the LEFT or the RIGHT?\n\n"
     #         'Answer with only "Left" or "Right".'
     #     ),
     # },
+    {
+        "name": "RodFrame",
+        "pyllusion_class": "RodFrame",
+        "strengths": _strengths(2.0),
+        "differences": _differences(
+            [0.06, 0.34882, 0.87661, 1.64336, 2.64907, 3.89375, 5.37739, 7.1]
+        ),
+        "response_options": ["Left", "Right"],
+        "prompt": (
+            "Look at the red rod (line) inside the tilted frame in this image.\n\n"
+            "Is the red rod tilted to the LEFT or to the RIGHT of vertical?\n\n"
+            'Answer with only "Left" or "Right".'
+        ),
+    },
     {
         "name": "Delboeuf",
         "pyllusion_class": "Delboeuf",
