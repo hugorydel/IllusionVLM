@@ -1,0 +1,2 @@
+model,illusion,baseline_PSE,baseline_slope,baseline_accuracy_overall,baseline_accuracy_small_diffs,baseline_side_bias_index
+gpt-5.2,VerticalHorizontal,0.0187,61.375735,0.9929,0.9812,0.1259

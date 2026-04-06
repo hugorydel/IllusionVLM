@@ -57,7 +57,7 @@ comparison/plotting time; no changes to stimuli or querying are needed.
 MODEL = "gpt-5.2"
 TEMPERATURE = 0.3
 REASONING_EFFORT = "none"  # "none"/"low"/"medium"/"high" for reasoning models; None for non-reasoning models (e.g. gpt-4o)
-N_PARTICIPANTS = 25
+N_PARTICIPANTS = 100
 MAX_TOKENS = 200  # Limit is 200 because some illusion names are 50-100 tokens long; this limit accommodates them.
 MAX_CONCURRENCY = 100
 MAX_DIMENSIONS = 512

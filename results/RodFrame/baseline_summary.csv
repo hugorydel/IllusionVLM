@@ -1,0 +1,2 @@
+model,illusion,baseline_PSE,baseline_slope,baseline_accuracy_overall,baseline_accuracy_small_diffs,baseline_side_bias_index
+gpt-5.2,RodFrame,0.8354,0.079788,0.6,0.4067,-0.085

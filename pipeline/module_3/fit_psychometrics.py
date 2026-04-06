@@ -23,6 +23,14 @@ import pandas as pd
 from scipy.optimize import curve_fit
 from scipy.special import erf
 
+from config import MODEL
+from pipeline.module_3.export_diagnostics import (
+    export_aggregated_responses,
+    export_baseline_summary,
+    export_fit_diagnostics,
+    export_illusion_summary,
+)
+
 # ============================================================================
 # PSYCHOMETRIC FUNCTION
 # ============================================================================
@@ -241,5 +249,20 @@ def run_fitting(
     pse_path = illusion_results_dir / "pse_summary.csv"
     pse_df.to_csv(pse_path, index=False)
     print(f"\n  ✓ PSE summary → {pse_path}")
+
+    # ── Diagnostic exports ────────────────────────────────────────────────────
+    print()
+    agg_df = export_aggregated_responses(
+        df, psych_data, illusion, illusion_results_dir, MODEL
+    )
+    diag_df = export_fit_diagnostics(
+        psych_data, pse_df, illusion, illusion_results_dir, MODEL
+    )
+    baseline_df = export_baseline_summary(
+        df, pse_df, illusion, illusion_results_dir, MODEL
+    )
+    export_illusion_summary(
+        diag_df, baseline_df, psych_data, illusion, illusion_results_dir, MODEL
+    )
 
     return psych_data, pse_df

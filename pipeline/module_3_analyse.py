@@ -32,9 +32,15 @@ def _is_complete(illusion_name: str) -> bool:
     expected = [
         base / "pse_summary.csv",
         base / "psychometric_data.csv",
+        base / "aggregated_responses.csv",
+        base / "fit_diagnostics.csv",
+        base / "baseline_summary.csv",
+        base / "illusion_summary.csv",
         base / "figures" / "fig1_error_by_difficulty.png",
         base / "figures" / "fig2_pse_vs_strength.png",
         base / "figures" / "fig3_psychometric_curves.png",
+        base / "figures" / "fig4_slope_vs_strength.png",
+        base / "figures" / "fig5_response_surface.png",
     ]
 
     # All outputs must exist

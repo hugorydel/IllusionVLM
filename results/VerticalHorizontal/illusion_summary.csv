@@ -1,0 +1,2 @@
+model,illusion,baseline_PSE_abs,fit_success_rate,PSE_range_across_strength,slope_range_across_strength,asymmetry_index,monotonic_trend_PSE,monotonic_trend_error,usable_for_PSE_shift,usable_for_shape_effect
+gpt-5.2,VerticalHorizontal,0.0187,1.0,0.2794,60.945887,0.1605,0.7808,0.7622,True,True

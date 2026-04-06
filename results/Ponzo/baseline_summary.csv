@@ -1,0 +1,2 @@
+model,illusion,baseline_PSE,baseline_slope,baseline_accuracy_overall,baseline_accuracy_small_diffs,baseline_side_bias_index
+gpt-5.2,Ponzo,-0.0397,199.47114,0.9784,0.9375,0.0361

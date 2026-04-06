@@ -386,27 +386,38 @@ def plot_psychometric_curves(
     figures_dir: Path,
 ) -> None:
     """
-    Figure 3: fitted cumulative Gaussian curves per illusion strength (diagnostic).
+    Figure 3: small-multiple grid of psychometric curves, one per strength level.
 
-    Colours follow the same Red→Green convention as Figure 1:
-      most incongruent (highest positive strength) = red
-      most congruent   (highest negative strength) = green
+    Each panel shows the scatter of (true_diff, prop_positive) and the
+    fitted cumulative Gaussian. A vertical dashed line marks the PSE.
+    Colours follow the same Red→Green convention as Figure 1.
     """
     positive_option = illusion["response_options"][0]
     name = illusion["name"]
 
-    # Sort ascending (negative → positive); reverse colour list so positive = red
     strengths = sorted(psych_data["illusion_strength"].unique())
-    colors_list = list(reversed(_difficulty_colormap(len(strengths))))
+    n = len(strengths)
+    n_cols = 5
+    n_rows = int(np.ceil(n / n_cols))
+
+    colors_list = list(reversed(_difficulty_colormap(n)))
     colors = {s: colors_list[i] for i, s in enumerate(strengths)}
 
     x_smooth = np.linspace(
         psych_data["true_diff"].min(), psych_data["true_diff"].max(), 300
     )
 
-    fig, ax = plt.subplots(figsize=(8, 5.5))
+    fig, axes = plt.subplots(
+        n_rows,
+        n_cols,
+        figsize=(n_cols * 3.2, n_rows * 2.8),
+        sharex=True,
+        sharey=True,
+    )
+    axes_flat = np.array(axes).flatten()
 
-    for strength in strengths:
+    for i, strength in enumerate(strengths):
+        ax = axes_flat[i]
         color = colors[strength]
         subset = psych_data[psych_data["illusion_strength"] == strength]
         pse_row = pse_summary[pse_summary["illusion_strength"] == strength]
@@ -415,52 +426,254 @@ def plot_psychometric_curves(
             subset["true_diff"],
             subset["prop_positive"],
             color=color,
-            s=35,
+            s=28,
             zorder=3,
-            alpha=0.75,
+            alpha=0.8,
         )
 
         if not pse_row.empty and bool(pse_row.iloc[0]["fit_success"]):
             pse = float(pse_row.iloc[0]["pse"])
             sigma = float(pse_row.iloc[0]["sigma"])
             ax.plot(
-                x_smooth,
-                _cumgauss(x_smooth, pse, sigma),
-                color=color,
-                linewidth=1.8,
-                label=f"{strength:+.0f}  (PSE={pse:+.3f})",
+                x_smooth, _cumgauss(x_smooth, pse, sigma), color=color, linewidth=1.6
             )
+            ax.axvline(pse, color=color, linewidth=0.9, linestyle="--", alpha=0.7)
+            ax.set_title(f"str={strength:+.1f}\nPSE={pse:+.3f}", fontsize=7.5)
+        else:
+            ax.set_title(f"str={strength:+.1f}\n(no fit)", fontsize=7.5)
 
-    ax.axvline(
-        0,
-        color="black",
-        linestyle="--",
-        linewidth=0.8,
-        alpha=0.5,
-        label="Physical equality",
-    )
-    ax.axhline(0.5, color="grey", linestyle=":", linewidth=0.8, alpha=0.5)
+        ax.axvline(0, color="black", linewidth=0.6, linestyle=":", alpha=0.4)
+        ax.axhline(0.5, color="grey", linewidth=0.6, linestyle=":", alpha=0.4)
+        ax.set_ylim(-0.05, 1.05)
+        ax.grid(True, alpha=0.2)
 
-    ax.set_xlabel("True physical difference (positive − negative)", fontsize=12)
-    ax.set_ylabel(f"P(respond '{positive_option}')", fontsize=12)
-    ax.set_title(f"Psychometric Functions — {name}", fontsize=13)
-    ax.set_ylim(-0.05, 1.05)
-    ax.legend(
-        fontsize=7,
-        loc="upper left",
-        ncol=2,
-        title="Illusion strength",
-        title_fontsize=7,
-        labelspacing=0.3,
-        handlelength=1.2,
-        handletextpad=0.4,
-    )
-    ax.grid(True, alpha=0.25)
+        # Axis labels only on the border panels
+        if i % n_cols == 0:
+            ax.set_ylabel(f"P('{positive_option}')", fontsize=7)
+        if i >= (n_rows - 1) * n_cols:
+            ax.set_xlabel("True Δ", fontsize=7)
+
+    # Hide any unused panels
+    for j in range(n, len(axes_flat)):
+        axes_flat[j].set_visible(False)
+
+    fig.suptitle(f"Psychometric Functions — {name}", fontsize=12, y=1.01)
     fig.tight_layout()
 
     out_path = figures_dir / "fig3_psychometric_curves.png"
     fig.savefig(out_path, dpi=150, bbox_inches="tight")
     print(f"  ✓ Figure 3 → {out_path}")
+    plt.close(fig)
+
+
+# ============================================================================
+# FIGURE 4: SLOPE vs. ILLUSION STRENGTH
+# ============================================================================
+
+
+def plot_slope_vs_strength(
+    illusion: dict,
+    pse_summary: pd.DataFrame,
+    psych_data: pd.DataFrame,
+    figures_dir: Path,
+) -> None:
+    """
+    Figure 4: slope (1 / (σ√2π)) ± SE vs. illusion strength.
+
+    Uses the same fit-quality classification as Figure 2:
+      good   — converged, PSE well within tested Δ range
+      edge   — PSE near boundary
+      failed — fit failed or SE too large
+
+    A steeper slope (larger value) means the model is more sensitive to
+    physical differences at that illusion strength.
+    """
+    name = illusion["name"]
+    diff_vals = psych_data["true_diff"].unique()
+    diff_min = float(diff_vals.min())
+    diff_max = float(diff_vals.max())
+    delta_range = diff_max - diff_min
+    margin = 0.10 * delta_range
+
+    df = pse_summary.copy()
+    df["fit_success"] = df["fit_success"].astype(bool)
+
+    # Derive slope and slope_SE from sigma
+    df["slope"] = np.where(
+        df["fit_success"] & df["sigma"].notna() & (df["sigma"] > 0),
+        1.0 / (df["sigma"] * np.sqrt(2 * np.pi)),
+        np.nan,
+    )
+    df["slope_se"] = np.where(
+        df["fit_success"]
+        & df["sigma"].notna()
+        & df["sigma_se"].notna()
+        & (df["sigma"] > 0),
+        df["sigma_se"] / (df["sigma"] ** 2 * np.sqrt(2 * np.pi)),
+        np.nan,
+    )
+
+    def _classify(row):
+        if not row["fit_success"] or np.isnan(row["pse"]):
+            return "failed"
+        if not np.isnan(row["pse_se"]) and row["pse_se"] > delta_range:
+            return "failed"
+        if row["pse"] <= diff_min + margin or row["pse"] >= diff_max - margin:
+            return "edge"
+        return "good"
+
+    df["fit_class"] = df.apply(_classify, axis=1)
+    good = df[df["fit_class"] == "good"]
+    edge = df[df["fit_class"] == "edge"]
+    failed = df[df["fit_class"] == "failed"]
+
+    fig, ax = plt.subplots(figsize=(7, 4.5))
+
+    if not good.empty:
+        ax.errorbar(
+            good["illusion_strength"],
+            good["slope"],
+            yerr=good["slope_se"],
+            fmt="o-",
+            color="#1a7f5c",
+            markersize=7,
+            linewidth=2,
+            capsize=4,
+            label="Slope ± SE (reliable fit)",
+        )
+
+    if not edge.empty:
+        ax.errorbar(
+            edge["illusion_strength"],
+            edge["slope"],
+            yerr=edge["slope_se"],
+            fmt="o",
+            color="#e08c00",
+            markersize=8,
+            linewidth=0,
+            capsize=4,
+            markerfacecolor="none",
+            markeredgewidth=2,
+            label="Slope near boundary (interpret with caution)",
+        )
+
+    if not failed.empty:
+        for _, row in failed.iterrows():
+            ax.axvline(
+                row["illusion_strength"],
+                color="#cc3333",
+                linewidth=1.2,
+                linestyle=":",
+                alpha=0.6,
+            )
+        ax.plot(
+            [],
+            [],
+            linestyle=":",
+            color="#cc3333",
+            linewidth=1.5,
+            label="Fit failed — excluded from trend",
+        )
+
+    if len(good) >= 3:
+        z = np.polyfit(good["illusion_strength"], good["slope"], 1)
+        x_line = np.linspace(
+            df["illusion_strength"].min(), df["illusion_strength"].max(), 200
+        )
+        ax.plot(
+            x_line,
+            np.polyval(z, x_line),
+            "--",
+            color="#a0a0a0",
+            linewidth=1.2,
+            label=f"Linear trend (slope={z[0]:+.5f})",
+        )
+
+    ax.axhline(0, color="black", linestyle="--", linewidth=0.8, alpha=0.5)
+    ax.set_xlabel("Illusion strength", fontsize=12)
+    ax.set_ylabel("Slope  (1 / σ√2π)  at PSE", fontsize=12)
+    ax.set_title(f"Psychometric Slope vs. Illusion Strength — {name}", fontsize=13)
+    ax.legend(fontsize=9)
+    ax.grid(True, alpha=0.3)
+    fig.tight_layout()
+
+    out_path = figures_dir / "fig4_slope_vs_strength.png"
+    fig.savefig(out_path, dpi=150, bbox_inches="tight")
+    print(f"  ✓ Figure 4 → {out_path}")
+    plt.close(fig)
+
+
+# ============================================================================
+# FIGURE 5: RESPONSE SURFACE HEATMAP
+# ============================================================================
+
+
+def plot_response_surface(
+    illusion: dict,
+    psych_data: pd.DataFrame,
+    figures_dir: Path,
+) -> None:
+    """
+    Figure 5: heatmap of p(positive response) across the full
+    (illusion_strength × true_diff) grid.
+
+    Colour scale is diverging around 0.5 (white = no bias).
+    Columns = illusion strength levels, rows = true_diff levels.
+    A structured illusion will show a visible left-right shift in each column
+    as illusion_strength changes; Contrast/White will appear uniformly coloured.
+    """
+    name = illusion["name"]
+    positive_option = illusion["response_options"][0]
+
+    pivot = psych_data.pivot_table(
+        index="true_diff",
+        columns="illusion_strength",
+        values="prop_positive",
+    )
+    # Rows: large diff at top (positive = model should choose positive option)
+    pivot = pivot.sort_index(ascending=False)
+
+    strengths = pivot.columns.tolist()
+    diffs = pivot.index.tolist()
+
+    fig, ax = plt.subplots(
+        figsize=(max(8, len(strengths) * 0.6), max(5, len(diffs) * 0.35))
+    )
+
+    im = ax.imshow(
+        pivot.values,
+        aspect="auto",
+        cmap="RdBu_r",
+        vmin=0.0,
+        vmax=1.0,
+        interpolation="nearest",
+    )
+
+    cbar = fig.colorbar(im, ax=ax, fraction=0.03, pad=0.02)
+    cbar.set_label(f"P(respond '{positive_option}')", fontsize=10)
+    cbar.ax.axhline(0.5, color="black", linewidth=1.0, linestyle="--")
+
+    ax.set_xticks(range(len(strengths)))
+    ax.set_xticklabels(
+        [f"{s:+.1f}" for s in strengths], fontsize=7, rotation=45, ha="right"
+    )
+    ax.set_yticks(range(len(diffs)))
+    ax.set_yticklabels([f"{d:+.4f}" for d in diffs], fontsize=7)
+
+    ax.set_xlabel("Illusion strength", fontsize=12)
+    ax.set_ylabel("True physical difference (Δ)", fontsize=12)
+    ax.set_title(f"Response Surface — {name}", fontsize=13)
+
+    # Horizontal line at diff ≈ 0 (nearest value)
+    nearest_zero_idx = int(np.argmin(np.abs(np.array(diffs))))
+    ax.axhline(
+        nearest_zero_idx - 0.5, color="white", linewidth=1.2, linestyle="--", alpha=0.6
+    )
+
+    fig.tight_layout()
+    out_path = figures_dir / "fig5_response_surface.png"
+    fig.savefig(out_path, dpi=150, bbox_inches="tight")
+    print(f"  ✓ Figure 5 → {out_path}")
     plt.close(fig)
 
 
@@ -495,3 +708,5 @@ def run_plotting(
     plot_error_by_difficulty(illusion, participants_dir, figures_dir)
     plot_pse_vs_strength(illusion, pse_summary, psych_data, figures_dir)
     plot_psychometric_curves(illusion, psych_data, pse_summary, figures_dir)
+    plot_slope_vs_strength(illusion, pse_summary, psych_data, figures_dir)
+    plot_response_surface(illusion, psych_data, figures_dir)

@@ -1,0 +1,2 @@
+model,illusion,baseline_PSE_abs,fit_success_rate,PSE_range_across_strength,slope_range_across_strength,asymmetry_index,monotonic_trend_PSE,monotonic_trend_error,usable_for_PSE_shift,usable_for_shape_effect
+gpt-5.2,MullerLyer,0.0515,1.0,0.3983,28.97394,0.264,0.9821,0.9893,True,True
