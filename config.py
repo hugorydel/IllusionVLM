@@ -152,7 +152,7 @@ ILLUSIONS = [
             0.42,
             0.54,
             0.70,
-        ],  # Supports observation of positive-end effects in VerticalHorizontal illusion.
+        ],  # Demonstrates positive-end effects in VerticalHorizontal illusion.
         "response_options": ["Left", "Right"],
         "prompt": (
             "Look at the two red lines in this image.\n\n"
@@ -168,12 +168,12 @@ ILLUSIONS = [
             [0.15, 0.32141, 0.58988, 0.97717, 1.50505, 2.19531, 3.0697, 4.15]
         ),
         # NOTE: Flip the x-axis when comparing against Makowski human data for this illusion.
-        "response_options": ["Top", "Bottom"],
+        "response_options": ["Left", "Right"],
         "prompt": (
-            "Look at the two long red diagonal lines in this image.\n\n"
-            "Which long red line appears to tilt more to the right at the top — "
-            "the TOP line or the BOTTOM line?\n\n"
-            'Answer with only "Top" or "Bottom".'
+            "Look at the two long red lines in this image.\n\n"
+            "In which direction do the two red lines appear to converge — "
+            "the LEFT or the RIGHT?\n\n"
+            'Answer with only "Left" or "Right".'
         ),
     },
     {
@@ -183,14 +183,13 @@ ILLUSIONS = [
         "differences": _differences(
             [0.02, 0.03538, 0.05713, 0.08636, 0.12415, 0.17162, 0.22987, 0.3]
         ),
-        # NOTE: Flip the x-axis when comparing against Makowski human data for this illusion.
-        "response_options": ["Left", "Right"],
+        "response_options": ["Above", "Below"],
         "prompt": (
-            "Look at the two red line segments on either side of the vertical bar.\n\n"
-            "Do the two red segments appear to be part of the same diagonal line, "
-            "or does one appear higher than the other?\n\n"
-            "Which segment appears higher — the LEFT one or the RIGHT one?\n\n"
-            'Answer with only "Left" or "Right".'
+            "Look at the two red line segments separated by the grey vertical bar.\n\n"
+            "Imagine extending the LEFT red segment straight through the grey bar.\n\n"
+            "On the RIGHT side, would that straight continuation pass ABOVE or BELOW "
+            "the visible right red segment?\n\n"
+            'Answer with only "Above" or "Below".'
         ),
     },
     {
@@ -231,8 +230,8 @@ ILLUSIONS = [
         # NOTE: Flip the x-axis when comparing against Makowski human data for this illusion.
         "response_options": ["Top", "Bottom"],
         "prompt": (
-            "Look at the two red squares in this image.\n\n"
-            "Which red square looks lighter (brighter) — the TOP one or the BOTTOM one?\n\n"
+            "Look at the two small grey rectangles in this image.\n\n"
+            "Which grey rectangle looks lighter (brighter) — the TOP one or the BOTTOM one?\n\n"
             'Answer with only "Top" or "Bottom".'
         ),
     },
@@ -244,11 +243,13 @@ ILLUSIONS = [
             [3.0, 4.33568, 5.91661, 7.74279, 9.81421, 12.13089, 14.69282, 17.5]
         ),
         # NOTE: Flip the x-axis when comparing against Makowski human data for this illusion.
-        "response_options": ["Top", "Bottom"],
+        "response_options": ["Left", "Right"],
         "prompt": (
-            "Look at the two grey rectangles in this image.\n\n"
-            "Which grey rectangle looks lighter (brighter) — the TOP one or the BOTTOM one?\n\n"
-            'Answer with only "Top" or "Bottom".'
+            "Look at the two grey rectangle groups in this image.\n\n"
+            "one group on the LEFT side of the image and one group on the RIGHT side.\n\n"
+            "Which group of grey rectangle patches looks lighter (brighter) overall — "
+            "the LEFT group or the RIGHT group?\n\n"
+            'Answer with only "Left" or "Right".'
         ),
     },
 ]
