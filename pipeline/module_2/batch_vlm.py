@@ -439,7 +439,9 @@ def cmd_submit(illusion: dict, args) -> None:
     )
 
     print()
-    api_key = getpass.getpass("Enter your OpenAI API key (input hidden): ")
+    api_key = getattr(args, "api_key", None) or getpass.getpass(
+        "Enter your OpenAI API key (input hidden): "
+    )
     if not api_key.strip():
         print("Error: No API key provided.")
         sys.exit(1)
@@ -499,7 +501,9 @@ def cmd_status(illusion: dict, args) -> None:
     s_path = state_path(name)
     state = load_state(s_path)
 
-    api_key = getpass.getpass("Enter your OpenAI API key (input hidden): ")
+    api_key = getattr(args, "api_key", None) or getpass.getpass(
+        "Enter your OpenAI API key (input hidden): "
+    )
     if not api_key.strip():
         print("Error: No API key provided.")
         sys.exit(1)
@@ -556,7 +560,9 @@ def cmd_download(illusion: dict, args) -> None:
         print("Error: No batches in state. Re-run submit.")
         sys.exit(1)
 
-    api_key = getpass.getpass("Enter your OpenAI API key (input hidden): ")
+    api_key = getattr(args, "api_key", None) or getpass.getpass(
+        "Enter your OpenAI API key (input hidden): "
+    )
     if not api_key.strip():
         print("Error: No API key provided.")
         sys.exit(1)
