@@ -160,44 +160,24 @@ ILLUSIONS = [
             'Answer with only "Left" or "Right".'
         ),
     },
-    # {
-    #     "name": "Poggendorff",
-    #     "pyllusion_class": "Poggendorff",
-    #     "strengths": _strengths(6.4),
-    #     "differences": _differences(
-    #         [0.02, 0.03538, 0.05713, 0.08636, 0.12415, 0.17162, 0.22987, 0.3]
-    #     ),
-    #     "response_options": ["Above", "Below"],
-    #     "prompt": (
-    #         "Look at the two red line segments separated by the grey vertical bar.\n\n"
-    #         "Imagine extending the LEFT red segment straight through the grey bar.\n\n"
-    #         "On the RIGHT side, would that straight continuation pass ABOVE or BELOW "
-    #         "the visible right red segment?\n\n"
-    #         'Answer with only "Above" or "Below".'
-    #     ),
-    # },
-    # {
-    #     "name": "Zollner",
-    #     "pyllusion_class": "Zollner",
-    #     "strengths": _strengths(11.0),
-    #     "differences": _differences(
-    #         [0.15, 0.32141, 0.58988, 0.97717, 1.50505, 2.19531, 3.0697, 4.15]
-    #     ),
-    #     # NOTE: Flip the x-axis when comparing against Makowski human data for this illusion.
-    #     "response_options": ["Left", "Right"],
-    #     "prompt": (
-    #         "Look at the two long red lines in this image.\n\n"
-    #         "In which direction do the two red lines appear to converge — "
-    #         "the LEFT or the RIGHT?\n\n"
-    #         'Answer with only "Left" or "Right".'
-    #     ),
-    # },
     {
         "name": "RodFrame",
         "pyllusion_class": "RodFrame",
         "strengths": _strengths(2.0),
         "differences": _differences(
-            [0.06, 0.34882, 0.87661, 1.64336, 2.64907, 3.89375, 5.37739, 7.1]
+            [
+                0.06,
+                0.34882,
+                0.87661,
+                1.64336,
+                2.64907,
+                3.89375,
+                5.37739,
+                7.1,
+                9.06157,
+                11.26210,
+                13.70160,
+            ]
         ),
         "response_options": ["Left", "Right"],
         "prompt": (
@@ -235,21 +215,53 @@ ILLUSIONS = [
             'Answer with only "Top" or "Bottom".'
         ),
     },
-    {
-        "name": "White",
-        "pyllusion_class": "White",
-        "strengths": _strengths(2.5),
-        "differences": _differences(
-            [3.0, 4.33568, 5.91661, 7.74279, 9.81421, 12.13089, 14.69282, 17.5]
-        ),
-        # NOTE: Flip the x-axis when comparing against Makowski human data for this illusion.
-        "response_options": ["Left", "Right"],
-        "prompt": (
-            "Look at the two grey rectangle groups in this image.\n\n"
-            "one group on the LEFT side of the image and one group on the RIGHT side.\n\n"
-            "Which group of grey rectangle patches looks lighter (brighter) overall — "
-            "the LEFT group or the RIGHT group?\n\n"
-            'Answer with only "Left" or "Right".'
-        ),
-    },
+    # {
+    #     "name": "Poggendorff",
+    #     "pyllusion_class": "Poggendorff",
+    #     "strengths": _strengths(6.4),
+    #     "differences": _differences(
+    #         [0.02, 0.03538, 0.05713, 0.08636, 0.12415, 0.17162, 0.22987, 0.3]
+    #     ),
+    #     "response_options": ["Above", "Below"],
+    #     "prompt": (
+    #         "Look at the two red line segments separated by the grey vertical bar.\n\n"
+    #         "Imagine extending the LEFT red segment straight through the grey bar.\n\n"
+    #         "On the RIGHT side, would that straight continuation pass ABOVE or BELOW "
+    #         "the visible right red segment?\n\n"
+    #         'Answer with only "Above" or "Below".'
+    #     ),
+    # },
+    # {
+    #     "name": "Zollner",
+    #     "pyllusion_class": "Zollner",
+    #     "strengths": _strengths(11.0),
+    #     "differences": _differences(
+    #         [0.15, 0.32141, 0.58988, 0.97717, 1.50505, 2.19531, 3.0697, 4.15]
+    #     ),
+    #     # NOTE: Flip the x-axis when comparing against Makowski human data for this illusion.
+    #     "response_options": ["Left", "Right"],
+    #     "prompt": (
+    #         "Look at the two long red lines in this image.\n\n"
+    #         "In which direction do the two red lines appear to converge — "
+    #         "the LEFT or the RIGHT?\n\n"
+    #         'Answer with only "Left" or "Right".'
+    #     ),
+    # },
+    # {
+    #     "name": "White",
+    #     "pyllusion_class": "White",
+    #     "strengths": _strengths(2.5),
+    #     "differences": _differences(
+    #         [3.0, 4.33568, 5.91661, 7.74279, 9.81421, 12.13089, 14.69282, 17.5]
+    #     ),
+    #     # NOTE: Flip the x-axis when comparing against Makowski human data for this illusion.
+    #     "response_options": ["Left", "Right"],
+    #     "prompt": (
+    #         "Look at the two grey rectangle groups in this image.\n\n"
+    #         "one group on the LEFT side of the image and one group on the RIGHT side.\n\n"
+    #         "Which group of grey rectangle patches looks lighter (brighter) overall — "
+    #         "the LEFT group or the RIGHT group?\n\n"
+    #         'Answer with only "Left" or "Right".'
+    #     ),
+    # },
 ]

@@ -6,3 +6,4 @@ batch_input_*.jsonl
 __pycache__/
 /stimuli/
 /tests/sample_data/
+/archive/

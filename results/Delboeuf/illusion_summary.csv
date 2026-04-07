@@ -1,2 +1,2 @@
 model,illusion,baseline_PSE_abs,fit_success_rate,PSE_range_across_strength,slope_range_across_strength,asymmetry_index,monotonic_trend_PSE,monotonic_trend_error,usable_for_PSE_shift,usable_for_shape_effect
-gpt-5.2,Delboeuf,0.1015,1.0,0.5057,76.332497,-0.0542,0.2955,-0.6278,False,True
+gpt-5.2,Delboeuf,0.0855,1.0,0.5236,40.69933,-0.0539,0.3485,-0.6309,True,True

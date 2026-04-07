@@ -14,6 +14,9 @@
 {"participant_id": 18, "image_id": "RodFrame_str-014_diff+3.89375", "illusion_strength": -14.0, "true_diff": 3.89375, "response": "Left", "correct": 1, "logprob_Left": 0.952574, "logprob_Right": 0.047426}
 {"participant_id": 18, "image_id": "RodFrame_str-014_diff+5.37739", "illusion_strength": -14.0, "true_diff": 5.37739, "response": "Left", "correct": 1, "logprob_Left": 0.851953, "logprob_Right": 0.148047}
 {"participant_id": 18, "image_id": "RodFrame_str-014_diff+7.10000", "illusion_strength": -14.0, "true_diff": 7.1, "response": "Left", "correct": 1, "logprob_Left": 0.977023, "logprob_Right": 0.022977}
+{"participant_id": 18, "image_id": "RodFrame_str-014_diff+9.06157", "illusion_strength": -14.0, "true_diff": 9.06157, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
+{"participant_id": 18, "image_id": "RodFrame_str-014_diff+11.26210", "illusion_strength": -14.0, "true_diff": 11.2621, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
+{"participant_id": 18, "image_id": "RodFrame_str-014_diff+13.70160", "illusion_strength": -14.0, "true_diff": 13.7016, "response": "Left", "correct": 1, "logprob_Left": 0.817574, "logprob_Right": 0.182426}
 {"participant_id": 18, "image_id": "RodFrame_str-012_diff-7.10000", "illusion_strength": -12.0, "true_diff": -7.1, "response": "Right", "correct": 1, "logprob_Left": 0.037327, "logprob_Right": 0.962673}
 {"participant_id": 18, "image_id": "RodFrame_str-012_diff-5.37739", "illusion_strength": -12.0, "true_diff": -5.37739, "response": "Right", "correct": 1, "logprob_Left": 0.047426, "logprob_Right": 0.952574}
 {"participant_id": 18, "image_id": "RodFrame_str-012_diff-3.89375", "illusion_strength": -12.0, "true_diff": -3.89375, "response": "Right", "correct": 1, "logprob_Left": 0.0, "logprob_Right": 1.0}
@@ -30,6 +33,9 @@
 {"participant_id": 18, "image_id": "RodFrame_str-012_diff+3.89375", "illusion_strength": -12.0, "true_diff": 3.89375, "response": "Left", "correct": 1, "logprob_Left": 0.377541, "logprob_Right": 0.622459}
 {"participant_id": 18, "image_id": "RodFrame_str-012_diff+5.37739", "illusion_strength": -12.0, "true_diff": 5.37739, "response": "Left", "correct": 1, "logprob_Left": 0.622459, "logprob_Right": 0.377541}
 {"participant_id": 18, "image_id": "RodFrame_str-012_diff+7.10000", "illusion_strength": -12.0, "true_diff": 7.1, "response": "Left", "correct": 1, "logprob_Left": 0.679179, "logprob_Right": 0.320821}
+{"participant_id": 18, "image_id": "RodFrame_str-012_diff+9.06157", "illusion_strength": -12.0, "true_diff": 9.06157, "response": "Left", "correct": 1, "logprob_Left": 0.5, "logprob_Right": 0.5}
+{"participant_id": 18, "image_id": "RodFrame_str-012_diff+11.26210", "illusion_strength": -12.0, "true_diff": 11.2621, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
+{"participant_id": 18, "image_id": "RodFrame_str-012_diff+13.70160", "illusion_strength": -12.0, "true_diff": 13.7016, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
 {"participant_id": 18, "image_id": "RodFrame_str-010_diff-7.10000", "illusion_strength": -10.0, "true_diff": -7.1, "response": "Right", "correct": 1, "logprob_Left": 0.0, "logprob_Right": 1.0}
 {"participant_id": 18, "image_id": "RodFrame_str-010_diff-5.37739", "illusion_strength": -10.0, "true_diff": -5.37739, "response": "Right", "correct": 1, "logprob_Left": 0.0, "logprob_Right": 1.0}
 {"participant_id": 18, "image_id": "RodFrame_str-010_diff-3.89375", "illusion_strength": -10.0, "true_diff": -3.89375, "response": "Right", "correct": 1, "logprob_Left": 0.0, "logprob_Right": 1.0}
@@ -46,6 +52,9 @@
 {"participant_id": 18, "image_id": "RodFrame_str-010_diff+3.89375", "illusion_strength": -10.0, "true_diff": 3.89375, "response": "Left", "correct": 1, "logprob_Left": 0.880797, "logprob_Right": 0.119203}
 {"participant_id": 18, "image_id": "RodFrame_str-010_diff+5.37739", "illusion_strength": -10.0, "true_diff": 5.37739, "response": "Right", "correct": 0, "logprob_Left": 0.268941, "logprob_Right": 0.731059}
 {"participant_id": 18, "image_id": "RodFrame_str-010_diff+7.10000", "illusion_strength": -10.0, "true_diff": 7.1, "response": "Left", "correct": 1, "logprob_Left": 0.962673, "logprob_Right": 0.037327}
+{"participant_id": 18, "image_id": "RodFrame_str-010_diff+9.06157", "illusion_strength": -10.0, "true_diff": 9.06157, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
+{"participant_id": 18, "image_id": "RodFrame_str-010_diff+11.26210", "illusion_strength": -10.0, "true_diff": 11.2621, "response": "Right", "correct": 0, "logprob_Left": 0.022977, "logprob_Right": 0.977023}
+{"participant_id": 18, "image_id": "RodFrame_str-010_diff+13.70160", "illusion_strength": -10.0, "true_diff": 13.7016, "response": "Left", "correct": 1, "logprob_Left": 0.880797, "logprob_Right": 0.119203}
 {"participant_id": 18, "image_id": "RodFrame_str-008_diff-7.10000", "illusion_strength": -8.0, "true_diff": -7.1, "response": "Right", "correct": 1, "logprob_Left": 0.0, "logprob_Right": 1.0}
 {"participant_id": 18, "image_id": "RodFrame_str-008_diff-5.37739", "illusion_strength": -8.0, "true_diff": -5.37739, "response": "Right", "correct": 1, "logprob_Left": 0.037327, "logprob_Right": 0.962673}
 {"participant_id": 18, "image_id": "RodFrame_str-008_diff-3.89375", "illusion_strength": -8.0, "true_diff": -3.89375, "response": "Right", "correct": 1, "logprob_Left": 0.037327, "logprob_Right": 0.962673}
@@ -62,6 +71,9 @@
 {"participant_id": 18, "image_id": "RodFrame_str-008_diff+3.89375", "illusion_strength": -8.0, "true_diff": 3.89375, "response": "Left", "correct": 1, "logprob_Left": 0.880797, "logprob_Right": 0.119203}
 {"participant_id": 18, "image_id": "RodFrame_str-008_diff+5.37739", "illusion_strength": -8.0, "true_diff": 5.37739, "response": "Left", "correct": 1, "logprob_Left": 0.904651, "logprob_Right": 0.095349}
 {"participant_id": 18, "image_id": "RodFrame_str-008_diff+7.10000", "illusion_strength": -8.0, "true_diff": 7.1, "response": "Left", "correct": 1, "logprob_Left": 0.977023, "logprob_Right": 0.022977}
+{"participant_id": 18, "image_id": "RodFrame_str-008_diff+9.06157", "illusion_strength": -8.0, "true_diff": 9.06157, "response": "Left", "correct": 1, "logprob_Left": 0.731059, "logprob_Right": 0.268941}
+{"participant_id": 18, "image_id": "RodFrame_str-008_diff+11.26210", "illusion_strength": -8.0, "true_diff": 11.2621, "response": "Left", "correct": 1, "logprob_Left": 0.562177, "logprob_Right": 0.437823}
+{"participant_id": 18, "image_id": "RodFrame_str-008_diff+13.70160", "illusion_strength": -8.0, "true_diff": 13.7016, "response": "Left", "correct": 1, "logprob_Left": 0.622459, "logprob_Right": 0.377541}
 {"participant_id": 18, "image_id": "RodFrame_str-006_diff-7.10000", "illusion_strength": -6.0, "true_diff": -7.1, "response": "Right", "correct": 1, "logprob_Left": 0.0, "logprob_Right": 1.0}
 {"participant_id": 18, "image_id": "RodFrame_str-006_diff-5.37739", "illusion_strength": -6.0, "true_diff": -5.37739, "response": "Right", "correct": 1, "logprob_Left": 0.0, "logprob_Right": 1.0}
 {"participant_id": 18, "image_id": "RodFrame_str-006_diff-3.89375", "illusion_strength": -6.0, "true_diff": -3.89375, "response": "Right", "correct": 1, "logprob_Left": 0.060087, "logprob_Right": 0.939913}
@@ -78,6 +90,9 @@
 {"participant_id": 18, "image_id": "RodFrame_str-006_diff+3.89375", "illusion_strength": -6.0, "true_diff": 3.89375, "response": "Left", "correct": 1, "logprob_Left": 0.851953, "logprob_Right": 0.148047}
 {"participant_id": 18, "image_id": "RodFrame_str-006_diff+5.37739", "illusion_strength": -6.0, "true_diff": 5.37739, "response": "Right", "correct": 0, "logprob_Left": 0.2227, "logprob_Right": 0.7773}
 {"participant_id": 18, "image_id": "RodFrame_str-006_diff+7.10000", "illusion_strength": -6.0, "true_diff": 7.1, "response": "Left", "correct": 1, "logprob_Left": 0.437823, "logprob_Right": 0.562177}
+{"participant_id": 18, "image_id": "RodFrame_str-006_diff+9.06157", "illusion_strength": -6.0, "true_diff": 9.06157, "response": "Left", "correct": 1, "logprob_Left": 0.952574, "logprob_Right": 0.047426}
+{"participant_id": 18, "image_id": "RodFrame_str-006_diff+11.26210", "illusion_strength": -6.0, "true_diff": 11.2621, "response": "Right", "correct": 0, "logprob_Left": 0.182426, "logprob_Right": 0.817574}
+{"participant_id": 18, "image_id": "RodFrame_str-006_diff+13.70160", "illusion_strength": -6.0, "true_diff": 13.7016, "response": "Right", "correct": 0, "logprob_Left": 0.095349, "logprob_Right": 0.904651}
 {"participant_id": 18, "image_id": "RodFrame_str-004_diff-7.10000", "illusion_strength": -4.0, "true_diff": -7.1, "response": "Right", "correct": 1, "logprob_Left": 0.0, "logprob_Right": 1.0}
 {"participant_id": 18, "image_id": "RodFrame_str-004_diff-5.37739", "illusion_strength": -4.0, "true_diff": -5.37739, "response": "Right", "correct": 1, "logprob_Left": 0.0, "logprob_Right": 1.0}
 {"participant_id": 18, "image_id": "RodFrame_str-004_diff-3.89375", "illusion_strength": -4.0, "true_diff": -3.89375, "response": "Right", "correct": 1, "logprob_Left": 0.029312, "logprob_Right": 0.970688}
@@ -94,6 +109,9 @@
 {"participant_id": 18, "image_id": "RodFrame_str-004_diff+3.89375", "illusion_strength": -4.0, "true_diff": 3.89375, "response": "Left", "correct": 1, "logprob_Left": 0.924142, "logprob_Right": 0.075858}
 {"participant_id": 18, "image_id": "RodFrame_str-004_diff+5.37739", "illusion_strength": -4.0, "true_diff": 5.37739, "response": "Left", "correct": 1, "logprob_Left": 0.622459, "logprob_Right": 0.377541}
 {"participant_id": 18, "image_id": "RodFrame_str-004_diff+7.10000", "illusion_strength": -4.0, "true_diff": 7.1, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
+{"participant_id": 18, "image_id": "RodFrame_str-004_diff+9.06157", "illusion_strength": -4.0, "true_diff": 9.06157, "response": "Left", "correct": 1, "logprob_Left": 0.939913, "logprob_Right": 0.060087}
+{"participant_id": 18, "image_id": "RodFrame_str-004_diff+11.26210", "illusion_strength": -4.0, "true_diff": 11.2621, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
+{"participant_id": 18, "image_id": "RodFrame_str-004_diff+13.70160", "illusion_strength": -4.0, "true_diff": 13.7016, "response": "Left", "correct": 1, "logprob_Left": 0.939913, "logprob_Right": 0.060087}
 {"participant_id": 18, "image_id": "RodFrame_str-002_diff-7.10000", "illusion_strength": -2.0, "true_diff": -7.1, "response": "Right", "correct": 1, "logprob_Left": 0.0, "logprob_Right": 1.0}
 {"participant_id": 18, "image_id": "RodFrame_str-002_diff-5.37739", "illusion_strength": -2.0, "true_diff": -5.37739, "response": "Right", "correct": 1, "logprob_Left": 0.0, "logprob_Right": 1.0}
 {"participant_id": 18, "image_id": "RodFrame_str-002_diff-3.89375", "illusion_strength": -2.0, "true_diff": -3.89375, "response": "Right", "correct": 1, "logprob_Left": 0.095349, "logprob_Right": 0.904651}
@@ -110,6 +128,9 @@
 {"participant_id": 18, "image_id": "RodFrame_str-002_diff+3.89375", "illusion_strength": -2.0, "true_diff": 3.89375, "response": "Left", "correct": 1, "logprob_Left": 0.977023, "logprob_Right": 0.022977}
 {"participant_id": 18, "image_id": "RodFrame_str-002_diff+5.37739", "illusion_strength": -2.0, "true_diff": 5.37739, "response": "Left", "correct": 1, "logprob_Left": 0.904651, "logprob_Right": 0.095349}
 {"participant_id": 18, "image_id": "RodFrame_str-002_diff+7.10000", "illusion_strength": -2.0, "true_diff": 7.1, "response": "Left", "correct": 1, "logprob_Left": 0.970688, "logprob_Right": 0.029312}
+{"participant_id": 18, "image_id": "RodFrame_str-002_diff+9.06157", "illusion_strength": -2.0, "true_diff": 9.06157, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
+{"participant_id": 18, "image_id": "RodFrame_str-002_diff+11.26210", "illusion_strength": -2.0, "true_diff": 11.2621, "response": "Left", "correct": 1, "logprob_Left": 0.924142, "logprob_Right": 0.075858}
+{"participant_id": 18, "image_id": "RodFrame_str-002_diff+13.70160", "illusion_strength": -2.0, "true_diff": 13.7016, "response": "Right", "correct": 0, "logprob_Left": 0.5, "logprob_Right": 0.5}
 {"participant_id": 18, "image_id": "RodFrame_str+000_diff-7.10000", "illusion_strength": 0.0, "true_diff": -7.1, "response": "Right", "correct": 1, "logprob_Left": 0.0, "logprob_Right": 1.0}
 {"participant_id": 18, "image_id": "RodFrame_str+000_diff-5.37739", "illusion_strength": 0.0, "true_diff": -5.37739, "response": "Right", "correct": 1, "logprob_Left": 0.075858, "logprob_Right": 0.924142}
 {"participant_id": 18, "image_id": "RodFrame_str+000_diff-3.89375", "illusion_strength": 0.0, "true_diff": -3.89375, "response": "Right", "correct": 1, "logprob_Left": 0.0, "logprob_Right": 1.0}
@@ -126,6 +147,9 @@
 {"participant_id": 18, "image_id": "RodFrame_str+000_diff+3.89375", "illusion_strength": 0.0, "true_diff": 3.89375, "response": "Right", "correct": 0, "logprob_Left": 0.182426, "logprob_Right": 0.817574}
 {"participant_id": 18, "image_id": "RodFrame_str+000_diff+5.37739", "illusion_strength": 0.0, "true_diff": 5.37739, "response": "Right", "correct": 0, "logprob_Left": 0.5, "logprob_Right": 0.5}
 {"participant_id": 18, "image_id": "RodFrame_str+000_diff+7.10000", "illusion_strength": 0.0, "true_diff": 7.1, "response": "Right", "correct": 0, "logprob_Left": 0.182426, "logprob_Right": 0.817574}
+{"participant_id": 18, "image_id": "RodFrame_str+000_diff+9.06157", "illusion_strength": 0.0, "true_diff": 9.06157, "response": "Left", "correct": 1, "logprob_Left": 0.904651, "logprob_Right": 0.095349}
+{"participant_id": 18, "image_id": "RodFrame_str+000_diff+11.26210", "illusion_strength": 0.0, "true_diff": 11.2621, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
+{"participant_id": 18, "image_id": "RodFrame_str+000_diff+13.70160", "illusion_strength": 0.0, "true_diff": 13.7016, "response": "Left", "correct": 1, "logprob_Left": 0.679179, "logprob_Right": 0.320821}
 {"participant_id": 18, "image_id": "RodFrame_str+002_diff-7.10000", "illusion_strength": 2.0, "true_diff": -7.1, "response": "Right", "correct": 1, "logprob_Left": 0.095349, "logprob_Right": 0.904651}
 {"participant_id": 18, "image_id": "RodFrame_str+002_diff-5.37739", "illusion_strength": 2.0, "true_diff": -5.37739, "response": "Right", "correct": 1, "logprob_Left": 0.5, "logprob_Right": 0.5}
 {"participant_id": 18, "image_id": "RodFrame_str+002_diff-3.89375", "illusion_strength": 2.0, "true_diff": -3.89375, "response": "Left", "correct": 0, "logprob_Left": 0.562177, "logprob_Right": 0.437823}
@@ -142,6 +166,9 @@
 {"participant_id": 18, "image_id": "RodFrame_str+002_diff+3.89375", "illusion_strength": 2.0, "true_diff": 3.89375, "response": "Left", "correct": 1, "logprob_Left": 0.952574, "logprob_Right": 0.047426}
 {"participant_id": 18, "image_id": "RodFrame_str+002_diff+5.37739", "illusion_strength": 2.0, "true_diff": 5.37739, "response": "Left", "correct": 1, "logprob_Left": 0.904651, "logprob_Right": 0.095349}
 {"participant_id": 18, "image_id": "RodFrame_str+002_diff+7.10000", "illusion_strength": 2.0, "true_diff": 7.1, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
+{"participant_id": 18, "image_id": "RodFrame_str+002_diff+9.06157", "illusion_strength": 2.0, "true_diff": 9.06157, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
+{"participant_id": 18, "image_id": "RodFrame_str+002_diff+11.26210", "illusion_strength": 2.0, "true_diff": 11.2621, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
+{"participant_id": 18, "image_id": "RodFrame_str+002_diff+13.70160", "illusion_strength": 2.0, "true_diff": 13.7016, "response": "Left", "correct": 1, "logprob_Left": 0.924142, "logprob_Right": 0.075858}
 {"participant_id": 18, "image_id": "RodFrame_str+004_diff-7.10000", "illusion_strength": 4.0, "true_diff": -7.1, "response": "Left", "correct": 0, "logprob_Left": 0.851953, "logprob_Right": 0.148047}
 {"participant_id": 18, "image_id": "RodFrame_str+004_diff-5.37739", "illusion_strength": 4.0, "true_diff": -5.37739, "response": "Right", "correct": 1, "logprob_Left": 0.377541, "logprob_Right": 0.622459}
 {"participant_id": 18, "image_id": "RodFrame_str+004_diff-3.89375", "illusion_strength": 4.0, "true_diff": -3.89375, "response": "Left", "correct": 0, "logprob_Left": 0.562177, "logprob_Right": 0.437823}
@@ -158,6 +185,9 @@
 {"participant_id": 18, "image_id": "RodFrame_str+004_diff+3.89375", "illusion_strength": 4.0, "true_diff": 3.89375, "response": "Left", "correct": 1, "logprob_Left": 0.622459, "logprob_Right": 0.377541}
 {"participant_id": 18, "image_id": "RodFrame_str+004_diff+5.37739", "illusion_strength": 4.0, "true_diff": 5.37739, "response": "Left", "correct": 1, "logprob_Left": 0.731059, "logprob_Right": 0.268941}
 {"participant_id": 18, "image_id": "RodFrame_str+004_diff+7.10000", "illusion_strength": 4.0, "true_diff": 7.1, "response": "Left", "correct": 1, "logprob_Left": 0.679179, "logprob_Right": 0.320821}
+{"participant_id": 18, "image_id": "RodFrame_str+004_diff+9.06157", "illusion_strength": 4.0, "true_diff": 9.06157, "response": "Left", "correct": 1, "logprob_Left": 0.962673, "logprob_Right": 0.037327}
+{"participant_id": 18, "image_id": "RodFrame_str+004_diff+11.26210", "illusion_strength": 4.0, "true_diff": 11.2621, "response": "Left", "correct": 1, "logprob_Left": 0.952574, "logprob_Right": 0.047426}
+{"participant_id": 18, "image_id": "RodFrame_str+004_diff+13.70160", "illusion_strength": 4.0, "true_diff": 13.7016, "response": "Left", "correct": 1, "logprob_Left": 0.977023, "logprob_Right": 0.022977}
 {"participant_id": 18, "image_id": "RodFrame_str+006_diff-7.10000", "illusion_strength": 6.0, "true_diff": -7.1, "response": "Left", "correct": 0, "logprob_Left": 0.562177, "logprob_Right": 0.437823}
 {"participant_id": 18, "image_id": "RodFrame_str+006_diff-5.37739", "illusion_strength": 6.0, "true_diff": -5.37739, "response": "Right", "correct": 1, "logprob_Left": 0.437823, "logprob_Right": 0.562177}
 {"participant_id": 18, "image_id": "RodFrame_str+006_diff-3.89375", "illusion_strength": 6.0, "true_diff": -3.89375, "response": "Right", "correct": 1, "logprob_Left": 0.622459, "logprob_Right": 0.377541}
@@ -174,6 +204,9 @@
 {"participant_id": 18, "image_id": "RodFrame_str+006_diff+3.89375", "illusion_strength": 6.0, "true_diff": 3.89375, "response": "Left", "correct": 1, "logprob_Left": 0.851953, "logprob_Right": 0.148047}
 {"participant_id": 18, "image_id": "RodFrame_str+006_diff+5.37739", "illusion_strength": 6.0, "true_diff": 5.37739, "response": "Right", "correct": 0, "logprob_Left": 0.622459, "logprob_Right": 0.377541}
 {"participant_id": 18, "image_id": "RodFrame_str+006_diff+7.10000", "illusion_strength": 6.0, "true_diff": 7.1, "response": "Left", "correct": 1, "logprob_Left": 0.952574, "logprob_Right": 0.047426}
+{"participant_id": 18, "image_id": "RodFrame_str+006_diff+9.06157", "illusion_strength": 6.0, "true_diff": 9.06157, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
+{"participant_id": 18, "image_id": "RodFrame_str+006_diff+11.26210", "illusion_strength": 6.0, "true_diff": 11.2621, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
+{"participant_id": 18, "image_id": "RodFrame_str+006_diff+13.70160", "illusion_strength": 6.0, "true_diff": 13.7016, "response": "Left", "correct": 1, "logprob_Left": 0.817574, "logprob_Right": 0.182426}
 {"participant_id": 18, "image_id": "RodFrame_str+008_diff-7.10000", "illusion_strength": 8.0, "true_diff": -7.1, "response": "Left", "correct": 0, "logprob_Left": 0.622459, "logprob_Right": 0.377541}
 {"participant_id": 18, "image_id": "RodFrame_str+008_diff-5.37739", "illusion_strength": 8.0, "true_diff": -5.37739, "response": "Left", "correct": 0, "logprob_Left": 0.939913, "logprob_Right": 0.060087}
 {"participant_id": 18, "image_id": "RodFrame_str+008_diff-3.89375", "illusion_strength": 8.0, "true_diff": -3.89375, "response": "Right", "correct": 1, "logprob_Left": 0.5, "logprob_Right": 0.5}
@@ -190,6 +223,9 @@
 {"participant_id": 18, "image_id": "RodFrame_str+008_diff+3.89375", "illusion_strength": 8.0, "true_diff": 3.89375, "response": "Left", "correct": 1, "logprob_Left": 0.7773, "logprob_Right": 0.2227}
 {"participant_id": 18, "image_id": "RodFrame_str+008_diff+5.37739", "illusion_strength": 8.0, "true_diff": 5.37739, "response": "Left", "correct": 1, "logprob_Left": 0.817574, "logprob_Right": 0.182426}
 {"participant_id": 18, "image_id": "RodFrame_str+008_diff+7.10000", "illusion_strength": 8.0, "true_diff": 7.1, "response": "Left", "correct": 1, "logprob_Left": 0.924142, "logprob_Right": 0.075858}
+{"participant_id": 18, "image_id": "RodFrame_str+008_diff+9.06157", "illusion_strength": 8.0, "true_diff": 9.06157, "response": "Right", "correct": 0, "logprob_Left": 0.562177, "logprob_Right": 0.437823}
+{"participant_id": 18, "image_id": "RodFrame_str+008_diff+11.26210", "illusion_strength": 8.0, "true_diff": 11.2621, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
+{"participant_id": 18, "image_id": "RodFrame_str+008_diff+13.70160", "illusion_strength": 8.0, "true_diff": 13.7016, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
 {"participant_id": 18, "image_id": "RodFrame_str+010_diff-7.10000", "illusion_strength": 10.0, "true_diff": -7.1, "response": "Left", "correct": 0, "logprob_Left": 0.679179, "logprob_Right": 0.320821}
 {"participant_id": 18, "image_id": "RodFrame_str+010_diff-5.37739", "illusion_strength": 10.0, "true_diff": -5.37739, "response": "Left", "correct": 0, "logprob_Left": 0.880797, "logprob_Right": 0.119203}
 {"participant_id": 18, "image_id": "RodFrame_str+010_diff-3.89375", "illusion_strength": 10.0, "true_diff": -3.89375, "response": "Right", "correct": 1, "logprob_Left": 0.5, "logprob_Right": 0.5}
@@ -206,6 +242,9 @@
 {"participant_id": 18, "image_id": "RodFrame_str+010_diff+3.89375", "illusion_strength": 10.0, "true_diff": 3.89375, "response": "Right", "correct": 0, "logprob_Left": 0.268941, "logprob_Right": 0.731059}
 {"participant_id": 18, "image_id": "RodFrame_str+010_diff+5.37739", "illusion_strength": 10.0, "true_diff": 5.37739, "response": "Left", "correct": 1, "logprob_Left": 0.880797, "logprob_Right": 0.119203}
 {"participant_id": 18, "image_id": "RodFrame_str+010_diff+7.10000", "illusion_strength": 10.0, "true_diff": 7.1, "response": "Left", "correct": 1, "logprob_Left": 0.939913, "logprob_Right": 0.060087}
+{"participant_id": 18, "image_id": "RodFrame_str+010_diff+9.06157", "illusion_strength": 10.0, "true_diff": 9.06157, "response": "Left", "correct": 1, "logprob_Left": 0.851953, "logprob_Right": 0.148047}
+{"participant_id": 18, "image_id": "RodFrame_str+010_diff+11.26210", "illusion_strength": 10.0, "true_diff": 11.2621, "response": "Left", "correct": 1, "logprob_Left": 0.970688, "logprob_Right": 0.029312}
+{"participant_id": 18, "image_id": "RodFrame_str+010_diff+13.70160", "illusion_strength": 10.0, "true_diff": 13.7016, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
 {"participant_id": 18, "image_id": "RodFrame_str+012_diff-7.10000", "illusion_strength": 12.0, "true_diff": -7.1, "response": "Left", "correct": 0, "logprob_Left": 0.851953, "logprob_Right": 0.148047}
 {"participant_id": 18, "image_id": "RodFrame_str+012_diff-5.37739", "illusion_strength": 12.0, "true_diff": -5.37739, "response": "Left", "correct": 0, "logprob_Left": 0.622459, "logprob_Right": 0.377541}
 {"participant_id": 18, "image_id": "RodFrame_str+012_diff-3.89375", "illusion_strength": 12.0, "true_diff": -3.89375, "response": "Left", "correct": 0, "logprob_Left": 0.817574, "logprob_Right": 0.182426}
@@ -222,6 +261,9 @@
 {"participant_id": 18, "image_id": "RodFrame_str+012_diff+3.89375", "illusion_strength": 12.0, "true_diff": 3.89375, "response": "Right", "correct": 0, "logprob_Left": 0.148047, "logprob_Right": 0.851953}
 {"participant_id": 18, "image_id": "RodFrame_str+012_diff+5.37739", "illusion_strength": 12.0, "true_diff": 5.37739, "response": "Left", "correct": 1, "logprob_Left": 0.939913, "logprob_Right": 0.060087}
 {"participant_id": 18, "image_id": "RodFrame_str+012_diff+7.10000", "illusion_strength": 12.0, "true_diff": 7.1, "response": "Left", "correct": 1, "logprob_Left": 0.851953, "logprob_Right": 0.148047}
+{"participant_id": 18, "image_id": "RodFrame_str+012_diff+9.06157", "illusion_strength": 12.0, "true_diff": 9.06157, "response": "Left", "correct": 1, "logprob_Left": 0.817574, "logprob_Right": 0.182426}
+{"participant_id": 18, "image_id": "RodFrame_str+012_diff+11.26210", "illusion_strength": 12.0, "true_diff": 11.2621, "response": "Left", "correct": 1, "logprob_Left": 0.817574, "logprob_Right": 0.182426}
+{"participant_id": 18, "image_id": "RodFrame_str+012_diff+13.70160", "illusion_strength": 12.0, "true_diff": 13.7016, "response": "Left", "correct": 1, "logprob_Left": 1.0, "logprob_Right": 0.0}
 {"participant_id": 18, "image_id": "RodFrame_str+014_diff-7.10000", "illusion_strength": 14.0, "true_diff": -7.1, "response": "Left", "correct": 0, "logprob_Left": 0.562177, "logprob_Right": 0.437823}
 {"participant_id": 18, "image_id": "RodFrame_str+014_diff-5.37739", "illusion_strength": 14.0, "true_diff": -5.37739, "response": "Left", "correct": 0, "logprob_Left": 0.851953, "logprob_Right": 0.148047}
 {"participant_id": 18, "image_id": "RodFrame_str+014_diff-3.89375", "illusion_strength": 14.0, "true_diff": -3.89375, "response": "Left", "correct": 0, "logprob_Left": 0.939913, "logprob_Right": 0.060087}
@@ -238,3 +280,6 @@
 {"participant_id": 18, "image_id": "RodFrame_str+014_diff+3.89375", "illusion_strength": 14.0, "true_diff": 3.89375, "response": "Left", "correct": 1, "logprob_Left": 0.880797, "logprob_Right": 0.119203}
 {"participant_id": 18, "image_id": "RodFrame_str+014_diff+5.37739", "illusion_strength": 14.0, "true_diff": 5.37739, "response": "Left", "correct": 1, "logprob_Left": 0.562177, "logprob_Right": 0.437823}
 {"participant_id": 18, "image_id": "RodFrame_str+014_diff+7.10000", "illusion_strength": 14.0, "true_diff": 7.1, "response": "Left", "correct": 1, "logprob_Left": 0.880797, "logprob_Right": 0.119203}
+{"participant_id": 18, "image_id": "RodFrame_str+014_diff+9.06157", "illusion_strength": 14.0, "true_diff": 9.06157, "response": "Left", "correct": 1, "logprob_Left": 0.924142, "logprob_Right": 0.075858}
+{"participant_id": 18, "image_id": "RodFrame_str+014_diff+11.26210", "illusion_strength": 14.0, "true_diff": 11.2621, "response": "Left", "correct": 1, "logprob_Left": 0.939913, "logprob_Right": 0.060087}
+{"participant_id": 18, "image_id": "RodFrame_str+014_diff+13.70160", "illusion_strength": 14.0, "true_diff": 13.7016, "response": "Left", "correct": 1, "logprob_Left": 0.924142, "logprob_Right": 0.075858}

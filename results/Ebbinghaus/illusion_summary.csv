@@ -1,2 +1,2 @@
 model,illusion,baseline_PSE_abs,fit_success_rate,PSE_range_across_strength,slope_range_across_strength,asymmetry_index,monotonic_trend_PSE,monotonic_trend_error,usable_for_PSE_shift,usable_for_shape_effect
-gpt-5.2,Ebbinghaus,0.2592,1.0,0.279,16.668778,-0.0217,-0.1,0.8426,False,True
+gpt-5.2,Ebbinghaus,0.1908,1.0,0.2871,27.287873,-0.0582,-0.4107,0.8607,False,True

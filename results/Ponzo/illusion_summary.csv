@@ -1,2 +1,2 @@
 model,illusion,baseline_PSE_abs,fit_success_rate,PSE_range_across_strength,slope_range_across_strength,asymmetry_index,monotonic_trend_PSE,monotonic_trend_error,usable_for_PSE_shift,usable_for_shape_effect
-gpt-5.2,Ponzo,0.0397,1.0,0.1489,196.596916,0.0134,0.1321,0.6393,False,True
+gpt-5.2,Ponzo,0.0397,1.0,0.1489,196.596916,0.0135,0.1321,0.6393,False,True

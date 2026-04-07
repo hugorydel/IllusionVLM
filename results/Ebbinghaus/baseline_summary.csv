@@ -1,2 +1,2 @@
 model,illusion,baseline_PSE,baseline_slope,baseline_accuracy_overall,baseline_accuracy_small_diffs,baseline_side_bias_index
-gpt-5.2,Ebbinghaus,-0.2592,10.498481,0.7675,0.5267,0.2325
+gpt-5.2,Ebbinghaus,-0.1908,6.626948,0.815,0.57,0.185

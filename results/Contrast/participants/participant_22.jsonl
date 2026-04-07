@@ -222,6 +222,7 @@
 {"participant_id": 22, "image_id": "Contrast_str+027_diff+12.13089", "illusion_strength": 27.0, "true_diff": 12.13089, "response": "Bottom", "correct": 0, "logprob_Top": 0.182426, "logprob_Bottom": 0.817574}
 {"participant_id": 22, "image_id": "Contrast_str+027_diff+14.69282", "illusion_strength": 27.0, "true_diff": 14.69282, "response": "Top", "correct": 1, "logprob_Top": 0.952574, "logprob_Bottom": 0.047426}
 {"participant_id": 22, "image_id": "Contrast_str+027_diff+17.50000", "illusion_strength": 27.0, "true_diff": 17.5, "response": "Top", "correct": 1, "logprob_Top": 1.0, "logprob_Bottom": 0.0}
+{"participant_id": 22, "image_id": "Contrast_str+31.50000_diff-17.50000", "illusion_strength": 31.5, "true_diff": -17.5, "response": "Top", "correct": 0, "logprob_Top": 0.817574, "logprob_Bottom": 0.182426}
 {"participant_id": 22, "image_id": "Contrast_str+31.50000_diff-14.69282", "illusion_strength": 31.5, "true_diff": -14.69282, "response": "Bottom", "correct": 1, "logprob_Top": 0.037327, "logprob_Bottom": 0.962673}
 {"participant_id": 22, "image_id": "Contrast_str+31.50000_diff-12.13089", "illusion_strength": 31.5, "true_diff": -12.13089, "response": "Bottom", "correct": 1, "logprob_Top": 0.182426, "logprob_Bottom": 0.817574}
 {"participant_id": 22, "image_id": "Contrast_str+31.50000_diff-9.81421", "illusion_strength": 31.5, "true_diff": -9.81421, "response": "Top", "correct": 0, "logprob_Top": 0.880797, "logprob_Bottom": 0.119203}

@@ -1,2 +1,0 @@
-model,illusion,baseline_PSE,baseline_slope,baseline_accuracy_overall,baseline_accuracy_small_diffs,baseline_side_bias_index
-gpt-5.2,White,0.0,3.989423,0.9125,0.7667,-0.0375

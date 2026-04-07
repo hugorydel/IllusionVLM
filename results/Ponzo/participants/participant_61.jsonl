@@ -163,6 +163,7 @@
 {"participant_id": 61, "image_id": "Ponzo_str+10.80000_diff-0.27349", "illusion_strength": 10.8, "true_diff": -0.27349, "response": "Bottom", "correct": 1, "logprob_Top": 1.7e-05, "logprob_Bottom": 0.999983}
 {"participant_id": 61, "image_id": "Ponzo_str+10.80000_diff-0.20297", "illusion_strength": 10.8, "true_diff": -0.20297, "response": "Bottom", "correct": 1, "logprob_Top": 1e-05, "logprob_Bottom": 0.99999}
 {"participant_id": 61, "image_id": "Ponzo_str+10.80000_diff-0.14575", "illusion_strength": 10.8, "true_diff": -0.14575, "response": "Bottom", "correct": 1, "logprob_Top": 1.3e-05, "logprob_Bottom": 0.999987}
+{"participant_id": 61, "image_id": "Ponzo_str+10.80000_diff-0.10044", "illusion_strength": 10.8, "true_diff": -0.10044, "response": "Bottom", "correct": 1, "logprob_Top": 0.0, "logprob_Bottom": 1.0}
 {"participant_id": 61, "image_id": "Ponzo_str+10.80000_diff-0.06565", "illusion_strength": 10.8, "true_diff": -0.06565, "response": "Bottom", "correct": 1, "logprob_Top": 0.119203, "logprob_Bottom": 0.880797}
 {"participant_id": 61, "image_id": "Ponzo_str+10.80000_diff-0.04000", "illusion_strength": 10.8, "true_diff": -0.04, "response": "Top", "correct": 0, "logprob_Top": 0.562177, "logprob_Bottom": 0.437823}
 {"participant_id": 61, "image_id": "Ponzo_str+10.80000_diff+0.04000", "illusion_strength": 10.8, "true_diff": 0.04, "response": "Top", "correct": 1, "logprob_Top": 0.5, "logprob_Bottom": 0.5}
