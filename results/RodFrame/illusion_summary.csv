@@ -1,2 +1,2 @@
 model,illusion,baseline_PSE_abs,fit_success_rate,PSE_range_across_strength,slope_range_across_strength,asymmetry_index,monotonic_trend_PSE,monotonic_trend_error,usable_for_PSE_shift,usable_for_shape_effect
-gpt-5.2,RodFrame,0.7221,1.0,2.7221,4.196121,-1.3507,-0.7764,0.8714,False,True
+gpt-5.2,RodFrame,0.7274,1.0,2.7274,4.196121,-1.3481,-0.7764,0.8893,False,True
