@@ -1,0 +1,15 @@
+species,illusion,peak_accuracy,threshold_75,baseline_d_prime,baseline_criterion,can_do_task
+human,Contrast,0.9902,3.0,4.0148,0.0047,True
+human,Delboeuf,0.9941,0.07,2.8172,-0.0084,True
+human,Ebbinghaus,0.9961,0.08329,2.7523,0.0241,True
+human,MullerLyer,0.9883,0.0405,2.989,-0.0741,True
+human,Ponzo,0.9883,0.04632,2.7583,0.1094,True
+human,RodFrame,0.9258,0.64902,1.8668,0.0221,True
+human,VerticalHorizontal,0.9785,0.04224,2.4704,-0.1784,True
+vlm,Contrast,1.0,3.0,5.2028,-0.2974,True
+vlm,Delboeuf,1.0,0.08785,4.4384,-1.0084,True
+vlm,Ebbinghaus,1.0,0.1847,3.559,-1.4481,True
+vlm,MullerLyer,1.0,0.04,3.4808,0.7577,True
+vlm,Ponzo,1.0,0.04,4.8098,-0.8227,True
+vlm,RodFrame,0.9,3.71594,0.513,0.2001,True
+vlm,VerticalHorizontal,1.0,0.03,4.7227,-0.1739,True
