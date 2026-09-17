@@ -29,7 +29,7 @@ Saved to results/<illusion_name>/figures/.
 import json
 from pathlib import Path
 
-import matplotlib.cm as cm
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -67,7 +67,9 @@ def _difficulty_colormap(n: int) -> list:
     Skips the pale yellow centre of RdYlGn that is invisible on white.
     Index 0 = red (hardest), index n-1 = green (easiest).
     """
-    cmap = cm.get_cmap("RdYlGn")
+    # matplotlib.cm.get_cmap was removed in 3.9; the registry is the
+    # supported lookup and works on every version that still ships it.
+    cmap = matplotlib.colormaps["RdYlGn"]
     half = n // 2
     remainder = n - half
     positions = np.concatenate(

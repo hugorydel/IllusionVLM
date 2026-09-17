@@ -21,6 +21,10 @@ from pathlib import Path
 
 import pyllusion
 
+# Registers DelboeufV12 on the pyllusion module. Imported here rather than in
+# the worker so that it is present under spawn-based multiprocessing, where
+# each worker re-imports this module.
+from pipeline import delboeuf_v12  # noqa: F401
 from pipeline.utils import make_filename
 
 STIMULI_ROOT = Path("stimuli")

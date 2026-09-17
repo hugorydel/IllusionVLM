@@ -62,6 +62,11 @@ MAX_TOKENS = 200  # Limit is 200 because some illusion names are 50-100 tokens l
 MAX_CONCURRENCY = 100
 MAX_DIMENSIONS = 512
 MAX_BATCH_BYTES: int = 190 * 1024 * 1024  # 190 MB — safely under OpenAI 200 MB limit
+# Cap on requests per sub-batch. The byte cap alone allowed ~20k requests in a
+# single batch, which is one point of failure against the 24h completion
+# window: when it ran out, the unprocessed remainder was lost in one block.
+# Smaller independent sub-batches bound that loss and complete more reliably.
+MAX_BATCH_REQUESTS: int = 6000
 JPEG_QUALITY = 90
 
 # ============================================================================
@@ -189,6 +194,27 @@ ILLUSIONS = [
     {
         "name": "Delboeuf",
         "pyllusion_class": "Delboeuf",
+        "strengths": _strengths(0.31),
+        "differences": _differences(
+            [0.07, 0.11066, 0.16462, 0.23378, 0.32001, 0.4252, 0.55124, 0.7]
+        ),
+        "response_options": ["Left", "Right"],
+        "prompt": (
+            "Look at the two red circles in this image.\n\n"
+            "Which red circle looks bigger — the LEFT one or the RIGHT one?\n\n"
+            'Answer with only "Left" or "Right".'
+        ),
+    },
+    {
+        # Same grid and prompt as Delboeuf, drawn with the Pyllusion 1.2
+        # outer-circle base size (see pipeline/delboeuf_v12.py). The installed
+        # Pyllusion postdates commit 4ee0c33c of 2022-09-05, which changed that
+        # base size; the human Illusion Game data was collected before it, so
+        # the plain Delboeuf entry above does not produce the stimuli the human
+        # participants saw. This variant does, and is the one to use for any
+        # human comparison on this illusion.
+        "name": "DelboeufV12",
+        "pyllusion_class": "DelboeufV12",
         "strengths": _strengths(0.31),
         "differences": _differences(
             [0.07, 0.11066, 0.16462, 0.23378, 0.32001, 0.4252, 0.55124, 0.7]

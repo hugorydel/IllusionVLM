@@ -9,15 +9,22 @@ Handles the three phases of an OpenAI Batch API job:
 
   status    Poll the submitted batch(es) and print current progress.
 
-  download  Download completed results, write participant_XX.jsonl files to
-            results/<illusion>/participants/, then delete _batch_tmp/ entirely.
+  download  Download results, write participant_XX.jsonl files to
+            results/<illusion>/participants/, and report coverage against the
+            target grid. A batch can reach a terminal status with some of its
+            requests failed or expired; those appear only in the batch's error
+            file, so it is read and tallied here. _batch_tmp/ is deleted only
+            when every request is accounted for -- otherwise the state and the
+            cached output/error files are kept so the gap can be diagnosed and
+            refilled by re-running submit.
 
 Batch API constraint:
   The Batch API targets /v1/chat/completions (not /v1/responses), so logprobs
   are extracted from choices[0].logprobs.content in the download phase.
 
 Cleanup:
-  _batch_tmp/ is removed after a successful download so results/ stays clean.
+  _batch_tmp/ is removed after a fully complete download so results/ stays
+  clean, and preserved whenever anything is missing.
 
 Standalone CLI usage (per-illusion):
     python -m pipeline.module_2.batch_vlm --illusion MullerLyer submit --n-participants 100
@@ -29,8 +36,10 @@ import argparse
 import getpass
 import json
 import math
+import re
 import shutil
 import sys
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -41,6 +50,7 @@ from config import (
     ILLUSIONS,
     JPEG_QUALITY,
     MAX_BATCH_BYTES,
+    MAX_BATCH_REQUESTS,
     MAX_DIMENSIONS,
     MAX_TOKENS,
     TEMPERATURE,
@@ -121,6 +131,21 @@ def cleanup_batch_tmp(illusion_name: str) -> None:
 # ============================================================================
 # GAP-FILLING
 # ============================================================================
+
+
+def _fmt_ranges(ids: list[int]) -> str:
+    """Collapse a sorted id list to compact ranges, e.g. '26-85, 90'."""
+    if not ids:
+        return ""
+    out, start, prev = [], ids[0], ids[0]
+    for i in ids[1:]:
+        if i == prev + 1:
+            prev = i
+            continue
+        out.append(f"{start}-{prev}" if start != prev else str(start))
+        start = prev = i
+    out.append(f"{start}-{prev}" if start != prev else str(start))
+    return ", ".join(out)
 
 
 def get_missing_requests(
@@ -251,6 +276,7 @@ def prepare_batch_files(
     file_index = 1
     current_ids: list[int] = []
     current_bytes = 0
+    current_count = 0
     current_path: Optional[Path] = None
     current_fh = None
 
@@ -280,17 +306,22 @@ def prepare_batch_files(
         ]
         pid_bytes = sum(len(ln.encode()) for ln in pid_lines)
 
-        if current_ids and (current_bytes + pid_bytes) > MAX_BATCH_BYTES:
+        if current_ids and (
+            (current_bytes + pid_bytes) > MAX_BATCH_BYTES
+            or (current_count + len(pid_lines)) > MAX_BATCH_REQUESTS
+        ):
             current_fh.close()
             sub_batches.append((current_path, list(current_ids)))
             current_ids = []
             current_bytes = 0
+            current_count = 0
             _open_new()
 
         for ln in pid_lines:
             current_fh.write(ln)
         current_ids.append(pid)
         current_bytes += pid_bytes
+        current_count += len(pid_lines)
 
     current_fh.close()
     sub_batches.append((current_path, list(current_ids)))
@@ -315,7 +346,10 @@ def _extract_batch_logprobs(
     We scan for the response option token and renormalise.
     """
     try:
-        logprobs_content = choices[0].get("logprobs", {}).get("content", [])
+        # `logprobs` is present but null when none were returned, so it cannot
+        # be assumed to be a mapping.
+        logprobs = choices[0].get("logprobs") or {}
+        logprobs_content = logprobs.get("content") or []
         target = set(response_options)
 
         choice_entry = next(
@@ -328,9 +362,11 @@ def _extract_batch_logprobs(
         }
         probs = {opt: raw.get(opt, 1e-10) for opt in response_options}
         total = sum(probs.values())
+        if total <= 0:
+            return {opt: 0.5 for opt in response_options}
         return {opt: round(p / total, 6) for opt, p in probs.items()}
 
-    except (StopIteration, KeyError, TypeError, ValueError):
+    except (AttributeError, StopIteration, KeyError, TypeError, ValueError):
         return {opt: 0.5 for opt in response_options}
 
 
@@ -339,35 +375,101 @@ def _extract_batch_logprobs(
 # ============================================================================
 
 
+def recover_answer(content: str, response_options: list[str]) -> Optional[str]:
+    """
+    Recover the chosen option from content that is not valid JSON.
+
+    A response truncated by the token limit looks like '{"response":"Le' - the
+    model has already committed to an option but the closing quote and brace
+    never arrived. The option is recovered only when exactly one of the
+    permitted options matches what is there, so an ambiguous fragment is
+    discarded rather than guessed.
+
+    Args:
+        content: The raw message content.
+        response_options: The permitted answers for this illusion.
+
+    Returns:
+        The matching option, or None if zero or several match.
+    """
+    if not content:
+        return None
+    # The fragment after the last quote is what the model was part-way through.
+    fragment = content.split('"')[-1].strip().lower()
+    if not fragment:
+        return None
+    hits = [opt for opt in response_options if opt.lower().startswith(fragment)]
+    if len(hits) == 1:
+        return hits[0]
+    # Fall back to a whole word appearing anywhere in the content.
+    hits = [
+        opt
+        for opt in response_options
+        if re.search(rf"\b{re.escape(opt)}\b", content, re.IGNORECASE)
+    ]
+    return hits[0] if len(hits) == 1 else None
+
+
 def parse_batch_response(
     line: str,
     response_options: list[str],
+    failures: Optional[Counter] = None,
 ) -> Optional[dict]:
     """
     Parse one line of batch output JSONL into a participant record.
 
-    Returns None if the request failed or the response is malformed.
+    Never raises: a single malformed response must not abandon the rest of a
+    downloaded batch. Returns None when the record cannot be used, and tallies
+    the reason in `failures` when one is supplied.
     """
-    obj = json.loads(line)
+
+    def note(reason: str) -> None:
+        if failures is not None:
+            failures[reason] += 1
+        return None
+
+    try:
+        obj = json.loads(line)
+    except json.JSONDecodeError:
+        return note("output line not readable as JSON")
 
     if obj.get("error") is not None:
-        return None
+        return note("request returned an error")
 
     response_body = obj.get("response", {}).get("body", {})
     if response_body.get("error"):
-        return None
+        return note("response body carried an error")
 
     choices = response_body.get("choices", [])
     if not choices:
-        return None
+        return note("no choices in response")
 
-    content = choices[0]["message"]["content"]
+    finish_reason = choices[0].get("finish_reason", "unknown")
+    content = choices[0].get("message", {}).get("content")
     if not content or not content.strip():
-        return None
-    parsed = json.loads(content)
+        return note(f"empty content (finish_reason={finish_reason})")
 
-    participant_id, image_id = parse_custom_id(obj["custom_id"])
-    _, strength, true_diff = parse_filename(image_id)
+    try:
+        answer = json.loads(content)["response"]
+    except (json.JSONDecodeError, KeyError, TypeError):
+        answer = recover_answer(content, response_options)
+        if answer is None:
+            return note(f"content not parsable (finish_reason={finish_reason})")
+        if failures is not None:
+            failures[
+                f"recovered from unparsable content (finish_reason={finish_reason})"
+            ] += 1
+
+    if answer not in response_options:
+        return note(f"answer {answer!r} is not a permitted option")
+
+    try:
+        participant_id, image_id = parse_custom_id(obj["custom_id"])
+        _, strength, true_diff = parse_filename(image_id)
+    except (KeyError, ValueError, TypeError) as exc:
+        return note(f"could not identify the stimulus ({type(exc).__name__})")
+
+    parsed = {"response": answer}
     correct = compute_correct(parsed["response"], true_diff, response_options)
 
     probs = _extract_batch_logprobs(choices, response_options)
@@ -534,8 +636,16 @@ def cmd_status(illusion: dict, args) -> None:
             print(
                 f"    Requests     : {rc.completed}/{rc.total} done, {rc.failed} failed"
             )
+            if rc.failed or (batch.status in ("completed", "expired") and rc.completed < rc.total):
+                n_lost = rc.total - rc.completed
+                print(
+                    f"    [!] PARTIAL   : {n_lost:,} request(s) did not return. "
+                    f"Download keeps what arrived; re-run submit for the rest."
+                )
         if batch.output_file_id:
             print(f"    Output file  : {batch.output_file_id}")
+        if getattr(batch, "error_file_id", None):
+            print(f"    Error file   : {batch.error_file_id}")
 
     print("\n" + "=" * 60)
     if all_complete:
@@ -545,6 +655,50 @@ def cmd_status(illusion: dict, args) -> None:
         print(f"\n  {n_done}/{len(batches)} complete. Check again later.")
 
     save_state(s_path, state)
+
+
+def fetch_error_file(client, batch, cache_dir: Path) -> Counter:
+    """
+    Download and tally a batch's per-request error file.
+
+    A batch reaches a terminal status even when individual requests inside it
+    fail or expire; those requests appear only in `error_file_id` and never in
+    the output file. Without reading it, a partial batch is indistinguishable
+    from a complete one and the missing trials are silently lost.
+
+    Returns a Counter of error reasons (empty if there is no error file).
+    """
+    reasons: Counter = Counter()
+    error_file_id = getattr(batch, "error_file_id", None)
+    if not error_file_id:
+        return reasons
+
+    cache = cache_dir / f"errors_{batch.id}.jsonl"
+    if cache.exists():
+        raw = cache.read_text(encoding="utf-8")
+    else:
+        raw = client.files.content(error_file_id).text
+        cache.write_text(raw, encoding="utf-8")
+
+    for line in raw.splitlines():
+        if not line.strip():
+            continue
+        try:
+            rec = json.loads(line)
+        except json.JSONDecodeError:
+            reasons["unparseable error line"] += 1
+            continue
+        err = (rec.get("response") or {}).get("body", {}).get("error") or rec.get(
+            "error"
+        )
+        if isinstance(err, dict):
+            code = err.get("code") or err.get("type") or "unknown"
+            message = (err.get("message") or "")[:120]
+            reasons[f"{code}: {message}" if message else str(code)] += 1
+        else:
+            reasons["unknown error shape"] += 1
+
+    return reasons
 
 
 def cmd_download(illusion: dict, args) -> None:
@@ -570,24 +724,66 @@ def cmd_download(illusion: dict, args) -> None:
 
     records_by_participant: dict[int, list[dict]] = {}
     total_ok = total_fail = 0
+    failures: Counter = Counter()
 
     skipped_batches = 0
+    incomplete_batches = 0
     for i, b in enumerate(batches, 1):
         print(f"\nSub-batch {i}/{len(batches)}: {b['batch_id']}")
-        batch = client.batches.retrieve(b["batch_id"])
 
-        if batch.status != "completed":
-            print(f"  [SKIP] Status is '{batch.status}' — not yet complete.")
+        # The batch object is retrieved even when the output is cached, because
+        # it carries request_counts and error_file_id — the only way to tell a
+        # partial batch from a complete one.
+        batch = client.batches.retrieve(b["batch_id"])
+        b["status"] = batch.status
+
+        # 'expired' is terminal and still exposes whatever finished inside the
+        # 24h window, so its partial output is worth keeping.
+        if batch.status not in ("completed", "expired"):
+            print(f"  [SKIP] Status is '{batch.status}' — not yet terminal.")
             skipped_batches += 1
             continue
 
-        raw = client.files.content(batch.output_file_id).text
+        rc = batch.request_counts
+        if rc:
+            print(
+                f"  Status '{batch.status}': "
+                f"{rc.completed}/{rc.total} completed, {rc.failed} failed"
+            )
+            if rc.failed or rc.completed < rc.total:
+                incomplete_batches += 1
+
+        err_reasons = fetch_error_file(client, batch, state_path(name).parent)
+        if err_reasons:
+            print(f"  Error file: {sum(err_reasons.values()):,} failed request(s)")
+            for reason, n in err_reasons.most_common(5):
+                print(f"    {n:>7,}  {reason}")
+
+        # A terminal batch's output is cached on disk before anything is
+        # parsed, so a malformed response cannot cost a second download of a
+        # file this size.
+        cache = state_path(name).parent / f"output_{b['batch_id']}.jsonl"
+        if cache.exists():
+            raw = cache.read_text(encoding="utf-8")
+            print(f"  Using cached output ({cache.name})")
+        elif batch.output_file_id:
+            raw = client.files.content(batch.output_file_id).text
+            cache.write_text(raw, encoding="utf-8")
+            print(f"  Downloaded and cached to {cache.name}")
+        else:
+            print("  [WARN] No output file — every request in this sub-batch failed.")
+            raw = ""
+
         lines = [ln for ln in raw.splitlines() if ln.strip()]
         print(f"  {len(lines)} response lines received")
 
         n_ok = n_fail = 0
         for line in lines:
-            record = parse_batch_response(line, response_options)
+            try:
+                record = parse_batch_response(line, response_options, failures)
+            except Exception as exc:  # one bad line must not end the download
+                failures[f"unexpected {type(exc).__name__} while parsing"] += 1
+                record = None
             if record is None:
                 n_fail += 1
                 continue
@@ -635,18 +831,71 @@ def cmd_download(illusion: dict, args) -> None:
     print(f"  Participants written : {len(records_by_participant)}")
     print(f"  Total successful     : {total_ok}")
     print(f"  Total failed         : {total_fail}")
+    if failures:
+        print("\n  Breakdown:")
+        for reason, n in failures.most_common():
+            print(f"    {n:>7,}  {reason}")
+
+    # Coverage against the target grid, so a shortfall is stated outright rather
+    # than left to be discovered later in analysis.
+    target = state.get("n_participants_target")
+    if target:
+        try:
+            image_dir = Path(getattr(args, "image_dir", "stimuli")) / name
+            expected = len(
+                discover_images(
+                    image_dir,
+                    name,
+                    strengths=illusion.get("strengths"),
+                    differences=illusion.get("differences"),
+                )
+            )
+        except FileNotFoundError:
+            expected = None
+
+        if expected:
+            short = []
+            for pid in range(1, target + 1):
+                p = out_dir / f"participant_{pid:02d}.jsonl"
+                n = sum(1 for ln in p.open(encoding="utf-8") if ln.strip()) if p.exists() else 0
+                if n < expected:
+                    short.append((pid, n))
+            print(f"\n  Coverage : {target - len(short)}/{target} participants complete "
+                  f"({expected} trials each)")
+            if short:
+                missing_trials = sum(expected - n for _, n in short)
+                absent = [pid for pid, n in short if n == 0]
+                print(f"  [!] {len(short)} participant(s) incomplete — "
+                      f"{missing_trials:,} trial(s) missing")
+                if absent:
+                    print(f"      no data at all for participants: {_fmt_ranges(absent)}")
+                print("      Re-run 'submit' to queue exactly these, then 'download'.")
     print("=" * 60)
 
-    # Only clean up _batch_tmp/ if every sub-batch was successfully downloaded.
-    # If any were skipped (not yet complete), preserve the state file so the
-    # user can run --batch download again once the remaining batches finish.
-    if skipped_batches == 0:
+    # Only clean up _batch_tmp/ when every sub-batch reached a terminal status
+    # AND every request inside them came back. Deleting the state file and the
+    # cached output/error files is what makes a partial batch unrecoverable and
+    # undiagnosable after the fact, so it is gated on the request counts rather
+    # than on batch status alone.
+    if skipped_batches == 0 and incomplete_batches == 0:
         cleanup_batch_tmp(name)
     else:
-        print(
-            f"\n  ⚠ {skipped_batches} sub-batch(es) were not yet complete — state file preserved."
-        )
-        print(f"  Run '--batch download' again once all batches have finished.")
+        if skipped_batches:
+            print(
+                f"\n  [!] {skipped_batches} sub-batch(es) not yet terminal — state file preserved."
+            )
+            print("  Run '--batch download' again once all batches have finished.")
+        if incomplete_batches:
+            print(
+                f"\n  [!] {incomplete_batches} sub-batch(es) returned fewer responses than requested."
+            )
+            print(
+                "  The missing trials were NOT retrieved. Re-run 'submit' to queue only"
+            )
+            print(
+                "  what is still missing (it diffs against participants/ before sending),"
+            )
+            print("  then 'download' again. _batch_tmp/ has been preserved for audit.")
 
 
 # ============================================================================
