@@ -181,7 +181,7 @@ def build(paper_dir: Path, out_path: Path) -> None:
         ax.set_title(title, fontsize=7.4, color=INK_PRIMARY, pad=4)
         if i == 0:
             ax.set_yticklabels([f"{t:g}" for t in ax.get_yticks()])
-            ax.set_ylabel("Total Illusion Effect", fontsize=7.2)
+            ax.set_ylabel("Relative Illusion Effect", fontsize=7.2)
         else:
             ax.set_yticklabels([])
         ax.text(
