@@ -1,12 +1,14 @@
 """
-pipeline/module_3_analyse.py - Module 3: Psychometric fitting and visualisation.
+pipeline/module_3_analyse.py - Module 3: Psychometric fitting per illusion.
 
 Iterates the illusion registry. For each illusion:
   1. Loads all participant JSONL files from results/<n>/participants/
-  2. Fits cumulative Gaussian psychometric functions per strength level
-  3. Extracts PSE values and saves pse_summary.csv + psychometric_data.csv
-  4. Generates fig1_error_by_difficulty.png, fig2_pse_vs_strength.png,
-     and fig3_psychometric_curves.png
+  2. Aggregates them into response cells (psychometric_data.csv), which is
+     Module 4's input for the model
+  3. Fits cumulative Gaussian psychometric functions per strength level and
+     saves pse_summary.csv with the diagnostic CSVs
+
+Figures are Module 4's job; this module writes tables only.
 
 Skip logic:
   If all expected outputs already exist for an illusion, that illusion is
@@ -16,7 +18,6 @@ Skip logic:
 from pathlib import Path
 
 from pipeline.module_3.fit_psychometrics import run_fitting
-from pipeline.module_3.plot_results import run_plotting
 
 RESULTS_ROOT = Path("results")
 
@@ -36,11 +37,6 @@ def _is_complete(illusion_name: str) -> bool:
         base / "fit_diagnostics.csv",
         base / "baseline_summary.csv",
         base / "illusion_summary.csv",
-        base / "figures" / "fig1_error_by_difficulty.png",
-        base / "figures" / "fig2_pse_vs_strength.png",
-        base / "figures" / "fig3_psychometric_curves.png",
-        base / "figures" / "fig4_slope_vs_strength.png",
-        base / "figures" / "fig5_response_surface.png",
     ]
 
     # All outputs must exist
@@ -68,11 +64,11 @@ def _is_complete(illusion_name: str) -> bool:
 
 def run(illusions: list[dict], force: bool = False) -> None:
     """
-    Fit and plot results for all illusions in the registry.
+    Fit and export results for all illusions in the registry.
 
     Args:
         illusions: List of illusion config dicts (from config.ILLUSIONS).
-        force:     Refit and replot even if outputs already exist.
+        force:     Refit even if outputs already exist.
     """
     print(f"\nAnalysing {len(illusions)} illusion(s)...")
 
@@ -86,17 +82,8 @@ def run(illusions: list[dict], force: bool = False) -> None:
             print(f"  ✓ Already complete — skipping. (Use force=True to rerun.)")
             continue
 
-        participants_dir = RESULTS_ROOT / name / "participants"
-
         try:
-            psych_data, pse_summary = run_fitting(illusion, RESULTS_ROOT)
-            run_plotting(
-                illusion=illusion,
-                psych_data=psych_data,
-                pse_summary=pse_summary,
-                results_root=RESULTS_ROOT,
-                participants_dir=participants_dir,
-            )
+            run_fitting(illusion, RESULTS_ROOT)
         except (FileNotFoundError, ValueError) as e:
             print(f"  ✗ Skipping {name}: {e}")
             continue

@@ -1,15 +1,11 @@
 species,illusion,magnitude_at_max,k_at_max,magnitude_trend_rho,n_reportable,n_measured,n_bounded,n_unconstrained,n_levels,can_do_task,side_bias_mean,baseline_error,baseline_side_bias
 human,Contrast,12.83428,7.0,1.0,7,7,0,0,7,True,0.82212,0.02212,-0.00025
-human,Delboeuf,0.27861,7.0,1.0,7,7,0,0,7,True,-0.0073,0.07927,0.00124
 human,Ebbinghaus,0.34775,7.0,1.0,7,7,0,0,7,True,-0.01187,0.08424,-0.00373
 human,MullerLyer,0.39457,7.0,1.0,7,6,1,0,7,True,-0.02268,0.06784,0.00969
 human,Ponzo,0.31642,7.0,1.0,7,7,0,0,7,True,-0.00759,0.08499,-0.0169
-human,RodFrame,3.23794,7.0,1.0,7,7,0,0,7,True,0.04696,0.1752,-0.00572
 human,VerticalHorizontal,0.18182,7.0,1.0,7,7,0,0,7,True,-0.00088,0.11183,0.0333
 vlm,Contrast,9.56087,7.0,0.9643,7,7,0,0,7,True,1.29399,0.00562,0.00438
-vlm,Delboeuf,0.07279,7.0,-0.9643,7,7,0,0,7,True,0.01097,0.05625,0.05625
 vlm,Ebbinghaus,0.06582,7.0,0.4286,7,7,0,0,7,True,-0.09233,0.185,0.185
 vlm,MullerLyer,0.31501,7.0,1.0,7,7,0,0,7,True,0.13496,0.08409,-0.07841
 vlm,Ponzo,0.05735,7.0,0.1071,7,7,0,0,7,True,0.02525,0.02813,0.02812
-vlm,RodFrame,8.92927,2.0,,2,1,1,5,7,False,-6.43668,0.40063,-0.07688
 vlm,VerticalHorizontal,0.17687,6.0,1.0,4,4,0,3,7,True,0.04301,0.00938,0.00438

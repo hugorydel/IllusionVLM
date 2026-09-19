@@ -1,14 +1,16 @@
 # Figure captions
 
-Captions for the four main figures, and the numbers each one rests on.
-Regenerate the figures with:
+Captions for the four main figures and two supplementary figures, and the
+numbers each one rests on. Regenerate everything (Module 3's per-illusion
+tables, then Module 4's comparison tables and figures) with:
 
 ```bash
-python -m figures.run_figures --human <dir-with-study2-and-study3-csvs>
+python run_pipeline.py --modules 3 4
 ```
 
-or with `--skip-dataset` to re-render from the tables already in
-`results/_paper/`.
+Module 4 alone is `python -m pipeline.module_4_figures`; add `--skip-dataset`
+to re-render from the tables already in `results/_paper/`. The human data are
+read from `data/human/`.
 
 ## Data
 
@@ -22,9 +24,12 @@ or with `--skip-dataset` to re-render from the tables already in
   contain: 15 illusion strengths crossed with 16 signed physical differences,
   interleaved as in the human design. Each non-zero strength samples 8 of the
   16 differences and zero strength samples all 16, giving 128 cells per
-  illusion. Our generator also produced extra cells for Müller-Lyer,
-  Vertical-Horizontal and Ponzo. These are kept in `cells.csv` with
-  `shared = False` and excluded from every figure.
+  illusion. GPT-5.2 was tested on more: the full crossing of strengths and
+  differences for every illusion (112 extra cells each), and larger
+  differences for Müller-Lyer, Vertical-Horizontal and Ponzo (60, 180 and 240
+  more). These are kept in `cells.csv` with `shared = False` and excluded
+  from every figure; Figure 1's example images are also drawn from the
+  shared cells only.
 - **Illusions shown.** Müller-Lyer, Vertical-Horizontal, Ponzo, Ebbinghaus,
   Contrast. Rod-Frame and Delboeuf are in the dataset but not in the figures;
   see *Held out of the figures* below.
@@ -44,8 +49,9 @@ or with `--skip-dataset` to re-render from the tables already in
 > that row. Each prompt also opened with a sentence naming the targets (e.g.
 > "Look at the two red horizontal lines in this image.") and closed with an
 > answer-format instruction (e.g. 'Answer with only "Top" or "Bottom".'); the
-> full prompts are given in the Methods. The human data use the same stimulus
-> parameters, from the Illusion Game (Makowski et al., 2023).
+> full prompts are given in the Methods. Every image uses a combination of
+> illusion strength and difference on which the human participants were also
+> tested, in the Illusion Game (Makowski et al., 2023).
 
 Full prompts, verbatim. The three parts are separated by blank lines in the
 prompt; the figure shows the middle one.
@@ -169,6 +175,36 @@ values differed markedly from the raw data at the strongest tested level
 (Ponzo humans, raw 1.26 against a drawn 1.00; Vertical-Horizontal GPT-5.2,
 raw 1.41 against 0.81). The average over the range uses all seven tested
 strengths and is not driven by the end point.
+
+---
+
+## Figure S1 — Error rate by difficulty
+
+> **Figure S1. Error rate against illusion strength, split by task difficulty,
+> in (A) humans and (B) GPT-5.2.** Each line is one difficulty band. The eight
+> tested physical differences are pooled in adjacent pairs, from *Hardest*
+> (the two smallest differences) to *Easiest* (the two largest). Pooling in
+> pairs gives every band a value at every strength in both species; the human
+> design shows only every other difference at each strength, and each pair
+> contains one of each. Points are raw error rates on the shared grid, with
+> both signs of the difference pooled; Figure 3 shows the same data smoothed
+> and without the split. Strength is normalised to the strongest tested level:
+> negative strengths are congruent, positive strengths incongruent.
+
+---
+
+## Figure S2 — Response surfaces
+
+> **Figure S2. The raw choices behind Figures 2 and 3, in (A) humans and (B)
+> GPT-5.2.** Each cell is the proportion of trials on which the first-named
+> option (Top or Left) was chosen, at one illusion strength (x) and one signed
+> difficulty band (y; the same bands as Figure S1). Rows below 0 are
+> differences favouring the second option, easiest at the bottom; rows above 0
+> favour the first option, easiest at the top. With no illusion the switch
+> between answers sits at 0 on the y-axis; an illusion that shifts perception
+> moves it, and at strong incongruent strengths it pushes responses across the
+> physical difference. The scale is greyscale so that it is not read as the
+> blue and orange that mark the two species elsewhere.
 
 ---
 

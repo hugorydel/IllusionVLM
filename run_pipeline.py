@@ -2,14 +2,16 @@
 """
 run_pipeline.py - Top-level pipeline runner.
 
-Runs Module 1 → Module 2 → Module 3 across all illusions registered in
-config.py, or a filtered subset via --illusion and --modules.
+Runs Module 1 → Module 2 → Module 3 → Module 4 across all illusions registered
+in config.py, or a filtered subset via --illusion and --modules. Module 4 (human
+comparison and paper figures) always covers every illusion with results.
 
 REAL-TIME QUERYING (default):
     python run_pipeline.py                         # full pipeline, all illusions
     python run_pipeline.py --illusion MullerLyer   # single illusion
     python run_pipeline.py --modules 1             # stimulus generation only
     python run_pipeline.py --modules 2 3           # query + analyse, skip generation
+    python run_pipeline.py --modules 3 4           # analyse + all paper figures
     python run_pipeline.py --force                 # regenerate existing stimuli (M1)
     python run_pipeline.py --dry-run               # print plan, no API calls (M2)
 
@@ -17,6 +19,7 @@ BATCH API (~50% cheaper, results in up to 24h):
     python run_pipeline.py --batch submit          # M1 + submit jobs to OpenAI
     python run_pipeline.py --batch status          # check job progress
     python run_pipeline.py --batch download        # download completed batches + run M3
+                                                   # (then --modules 4 for the figures)
 
     Add --illusion NAME to any batch command to restrict to one illusion.
     Add --modules to batch submit to control whether M1 runs (e.g. --modules 2).
@@ -41,13 +44,14 @@ from config import (
     TEMPERATURE,
 )
 
-ALL_MODULES = [1, 2, 3]
+ALL_MODULES = [1, 2, 3, 4]
 RESULTS_ROOT = Path("results")
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="VLM Illusion Pipeline — generates stimuli, queries VLM, fits PSEs",
+        description="VLM Illusion Pipeline — generates stimuli, queries VLM, fits PSEs, "
+        "compares with humans and renders the paper figures",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
@@ -114,6 +118,7 @@ def main():
     from pipeline.module_1_generate import run as generate
     from pipeline.module_2_query import run as query
     from pipeline.module_3_analyse import run as analyse
+    from pipeline.module_4_figures import run as figures
 
     active = sorted(modules)
     print("=" * 60)
@@ -140,6 +145,12 @@ def main():
         print("MODULE 3 — PSYCHOMETRIC ANALYSIS")
         print("━" * 60)
         analyse(illusions)
+
+    if 4 in modules:
+        print("\n" + "━" * 60)
+        print("MODULE 4 — HUMAN COMPARISON AND PAPER FIGURES")
+        print("━" * 60)
+        figures()
 
     print("\n" + "=" * 60)
     print("PIPELINE COMPLETE")
@@ -254,6 +265,7 @@ def _run_batch(illusions: list[dict], args, modules: set[int]) -> None:
         print("\n" + "=" * 60)
         print("BATCH DOWNLOAD + ANALYSIS COMPLETE")
         print("=" * 60)
+        print("\nPaper figures: python run_pipeline.py --modules 4")
 
 
 if __name__ == "__main__":
