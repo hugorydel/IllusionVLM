@@ -45,19 +45,21 @@ SAMPLING SETTINGS ARE EXPLICIT
     generation_config="vllm" and temperature and top_p are set here.
 
 RUNNING IT (on a rented GPU; there is no GPU on the analysis machine)
-    1. Start a pod with CUDA and enough GPU memory: one 80 GB card for every
-       model except InternVL3.5-38B, which needs two (config n_gpus).
-    2. Copy this repository and the stimuli/ folder onto the pod, then:
-           pip install "vllm>=0.11" pillow pandas
-    3. Pilot first - one illusion, 10 answers per stimulus, into
-       results/_pilot/ so it never mixes with real data:
-           python -m pipeline.module_2.local_vlm --model qwen3-vl-2b --pilot
-       It prints the image-token count, the share of valid answers, and how
-       closely sampled proportions follow the exact probabilities.
-    4. Full run, one model at a time:
-           python -m pipeline.module_2.local_vlm --model qwen3-vl-2b
-    5. Copy results/<model>/ back into this repository and run
-           python run_pipeline.py --modules 3 4
+    pipeline/module_2/run_open_models.sh wraps this module for a pod session:
+    it checks the code is committed, unpacks the stimuli, installs vLLM,
+    checks the GPU count, runs each model, records the environment and packs
+    the results. On a pod with CUDA and enough GPU memory (one 80 GB card for
+    every model except InternVL3.5-38B, which needs two - config n_gpus):
+
+        bash pipeline/module_2/run_open_models.sh --pilot qwen3-vl-2b internvl3.5-2b
+        bash pipeline/module_2/run_open_models.sh qwen3-vl-2b qwen3-vl-8b ...
+
+    The pilot runs one illusion with 10 answers per stimulus into
+    results/_pilot/, so it never mixes with real data. It prints the
+    image-token count, the share of valid answers, and how closely sampled
+    proportions follow the exact probabilities. Copy results/<model>/ back
+    into this repository and run
+        python run_pipeline.py --modules 3 4
 """
 
 from __future__ import annotations
@@ -65,6 +67,8 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -322,6 +326,31 @@ def run_illusion(
 # ============================================================================
 
 
+def provenance() -> dict:
+    """The code and hardware a run used, for run_info.json."""
+
+    def git(*args: str) -> str | None:
+        try:
+            done = subprocess.run(["git", *args], capture_output=True, text=True, check=True)
+            return done.stdout.strip()
+        except (OSError, subprocess.CalledProcessError):
+            return None
+
+    status = git("status", "--porcelain", "--untracked-files=no")
+    try:
+        import torch
+
+        gpus = [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())]
+    except Exception:
+        gpus = None
+    return {
+        "git_commit": git("rev-parse", "HEAD"),
+        "git_modified_files": None if status is None else bool(status),
+        "gpus": gpus,
+        "runpod_pod_id": os.environ.get("RUNPOD_POD_ID"),
+    }
+
+
 def run(model_key: str, pilot: bool = False, illusion: str | None = None, n: int | None = None) -> None:
     """Run one open model over the illusion registry (or the pilot subset)."""
     matches = [m for m in MODELS if m["key"] == model_key]
@@ -358,6 +387,7 @@ def run(model_key: str, pilot: bool = False, illusion: str | None = None, n: int
 
     info = {
         "model": model,
+        **provenance(),
         "vllm_version": vllm.__version__,
         "temperature": TEMPERATURE,
         "top_p": 1.0,
