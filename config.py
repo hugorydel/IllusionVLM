@@ -206,27 +206,6 @@ ILLUSIONS = [
         ),
     },
     {
-        # Same grid and prompt as Delboeuf, drawn with the Pyllusion 1.2
-        # outer-circle base size (see pipeline/delboeuf_v12.py). The installed
-        # Pyllusion postdates commit 4ee0c33c of 2022-09-05, which changed that
-        # base size; the human Illusion Game data was collected before it, so
-        # the plain Delboeuf entry above does not produce the stimuli the human
-        # participants saw. This variant does, and is the one to use for any
-        # human comparison on this illusion.
-        "name": "DelboeufV12",
-        "pyllusion_class": "DelboeufV12",
-        "strengths": _strengths(0.31),
-        "differences": _differences(
-            [0.07, 0.11066, 0.16462, 0.23378, 0.32001, 0.4252, 0.55124, 0.7]
-        ),
-        "response_options": ["Left", "Right"],
-        "prompt": (
-            "Look at the two red circles in this image.\n\n"
-            "Which red circle looks bigger — the LEFT one or the RIGHT one?\n\n"
-            'Answer with only "Left" or "Right".'
-        ),
-    },
-    {
         "name": "Contrast",
         "pyllusion_class": "Contrast",
         "strengths": _strengths(4.5),

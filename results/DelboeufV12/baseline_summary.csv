@@ -1,2 +1,0 @@
-model,illusion,baseline_PSE,baseline_slope,baseline_accuracy_overall,baseline_accuracy_small_diffs,baseline_side_bias_index
-gpt-5.2,DelboeufV12,-0.198,8.416504,0.8125,0.5458,0.1875

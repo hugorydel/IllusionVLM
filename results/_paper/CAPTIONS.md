@@ -1,229 +1,215 @@
-# Figure captions and key numbers
+# Figure captions
 
-Draft captions for the five main figures, plus the numbers each one rests on.
-Regenerate everything with:
+Captions for the four main figures, and the numbers each one rests on.
+Regenerate the figures with:
 
 ```bash
-python -m pipeline.paper.run_figures --human <dir-with-study2-and-study3-csvs>
+python -m figures.run_figures --human <dir-with-study2-and-study3-csvs>
 ```
 
-Human data: Makowski et al. (2023), *The Illusion Game*, Study 2 —
-`RealityBending/IllusionGameValidation`, `data/study2_part{1,2}.csv`
-(N = 256, 326,960 trials) and `data/study3.csv` (N = 250 participant-level
-scores). Model data: GPT-5.2, 100–110 sampled response sets per illusion,
-temperature 0.3.
+or with `--skip-dataset` to re-render from the tables already in
+`results/_paper/`.
 
-All species comparisons use the **shared stimulus grid**: the 15 illusion
-strengths and 8 absolute difference levels both datasets have in common
-(128 cells per illusion). Our grid extends beyond the human one for
-Müller-Lyer, Vertical-Horizontal, Ponzo and Rod-Frame; those cells are
-retained in `cells.csv` with `shared = False` and excluded from every
-cross-species contrast.
+## Data
+
+- **Humans.** Makowski et al. (2023), *The Illusion Game*, Study 2
+  (`RealityBending/IllusionGameValidation`, `data/study2_part{1,2}.csv`),
+  N = 256. Each participant saw each stimulus once, giving 247–256 trials per
+  cell. Responses were speeded.
+- **GPT-5.2.** 100 runs per illusion (110 for Müller-Lyer), each answering
+  every stimulus once. Temperature 0.3, reasoning effort "none", untimed.
+- **Shared grid.** Every comparison uses only the cells both datasets
+  contain: 15 illusion strengths crossed with 16 signed physical differences,
+  interleaved as in the human design. Each non-zero strength samples 8 of the
+  16 differences and zero strength samples all 16, giving 128 cells per
+  illusion. Our generator also produced extra cells for Müller-Lyer,
+  Vertical-Horizontal and Ponzo. These are kept in `cells.csv` with
+  `shared = False` and excluded from every figure.
+- **Illusions shown.** Müller-Lyer, Vertical-Horizontal, Ponzo, Ebbinghaus,
+  Contrast. Rod-Frame and Delboeuf are in the dataset but not in the figures;
+  see *Held out of the figures* below.
 
 ---
 
 ## Figure 1 — The paradigm
 
-> **Figure 1. Forced-choice psychophysics applied to a vision-language model.**
-> (**A**) For each of seven illusions, the same physical difference Δ rendered
-> at the congruent extreme (k = −7), with no illusion (k = 0), and at the
-> incongruent extreme (k = +7). The correct answer is identical across all
-> three images in a row; only the surrounding context changes. (**B**) The
-> verbatim forced-choice question put to the model, its two permitted
-> responses, and the Δ held fixed along that row. Illusion strength is
-> reported throughout as the normalised index k ∈ [−7, +7], because the raw
-> strength unit differs per illusion (given in Figure 2).
+> **Figure 1. The paradigm.** Each row shows one illusion at a single
+> physical difference, held fixed along the row. The correct answer is
+> therefore the same in all three images; only the surrounding context
+> changes. *Negative Illusion*: the strongest tested illusion in the congruent
+> direction, where the context supports the correct answer. *No Illusion*:
+> illusion strength zero. *Positive Illusion*: the strongest tested illusion
+> in the incongruent direction, where the context opposes the correct answer.
+> *Task*: the question put to GPT-5.2, verbatim, and the correct answer for
+> that row. Each prompt also opened with a sentence naming the targets (e.g.
+> "Look at the two red horizontal lines in this image.") and closed with an
+> answer-format instruction (e.g. 'Answer with only "Top" or "Bottom".'); the
+> full prompts are given in the Methods. The human data use the same stimulus
+> parameters, from the Illusion Game (Makowski et al., 2023).
 
-Note for the text: the sign of `illusion_strength` encodes **congruency
-relative to the true difference**, not a fixed spatial direction. Congruency
-is determined by `sign(k)` alone and is independent of `sign(Δ)` — verified in
-the human data, where `P(Incongruent | k > 0)` is exactly 0 or 1 for every
-illusion.
+Full prompts, verbatim. The three parts are separated by blank lines in the
+prompt; the figure shows the middle one.
+
+| Illusion | Opening sentence | Question (shown in Figure 1) | Answer format |
+|---|---|---|---|
+| Müller-Lyer | Look at the two red horizontal lines in this image. | Which red line looks longer — the TOP one or the BOTTOM one? | Answer with only "Top" or "Bottom". |
+| Vertical-Horizontal | Look at the two red lines in this image. | Which red line looks longer — the LEFT one or the RIGHT one? | Answer with only "Left" or "Right". |
+| Ponzo | Look at the two red horizontal lines in this image. | Which red line looks longer — the TOP one or the BOTTOM one? | Answer with only "Top" or "Bottom". |
+| Ebbinghaus | Look at the two red circles in the centre of each group in this image. | Which central red circle looks bigger — the LEFT one or the RIGHT one? | Answer with only "Left" or "Right". |
+| Contrast | Look at the two small grey rectangles in this image. | Which grey rectangle looks lighter (brighter) — the TOP one or the BOTTOM one? | Answer with only "Top" or "Bottom". |
 
 ---
 
-## Figure 2 — The matrix figure
+## Figure 2 — Perceptual shift
 
-> **Figure 2. Illusion susceptibility in GPT-5.2 and in humans, across seven
-> illusions.** Rows are illusions, ordered by effect clarity; the raw strength
-> unit for each appears in its row label. (**A**, **B**) Response surfaces:
-> P(positive option) over illusion strength k and signed difficulty, for the
-> model and for humans on identical cells. |Δ| is pooled into four
-> equal-count difficulty bands by rank, which fills every cell in both species
-> despite the interleaved human design (see note below). Both species show the
-> same V-shaped response around Δ = 0 at strong incongruent strengths, which
-> establishes it as a property of the design rather than a model failure.
-> (**C**) Sensitivity, as d′ relative to each observer's own zero-strength
-> baseline. Values below 0 mean responses ran *against* the physical
-> difference. (**D**) Bias, as the criterion shift c − c₀. A purely masking
-> illusion leaves this at zero however large the sensitivity loss; a
-> directional one moves it away from zero. Scales in C and D are shared across
-> rows.
+> **Figure 2. How far each illusion shifts perception, in humans and
+> GPT-5.2.** (**A–E**) Perceptual shift against illusion strength. The
+> perceptual shift is the displacement of the point of subjective equality
+> (PSE), the physical difference at which the two answers are given equally
+> often. At each absolute strength, the responses from the illusion's two
+> spatial directions were fitted jointly by a cumulative Gaussian with a
+> shared slope and shared lapse rates; the shift is half the distance between
+> the two directions' PSEs. Strength is normalised to the strongest tested
+> level, so it runs from −1 to +1 in every panel, and its sign is the
+> direction in which the context displaces the percept. Because each shift is
+> estimated from both directions at once, it is plotted at both +x and −x,
+> and every curve is point-symmetric about the origin by construction. Curves
+> are natural cubic regression splines (4 basis functions) through the seven
+> tested strengths and the origin, weighted by the inverse variance of each
+> estimate; bands are 95% confidence intervals. Both species are divided by
+> the peak of the human curve for that illusion, so the human curve reaches
+> ±1 and the GPT-5.2 curve reads as a fraction of the human shift.
 
-**The human design is interleaved.** Each non-zero strength samples 8 of the
-16 signed difference levels (256 trials per cell, one per participant), with
-all 16 at k = 0, and adjacent strengths cover complementary levels. Pooling
-|Δ| in rank-pairs means every human row contributes exactly one level to each
-difficulty band on each side of zero.
+The divisor for each illusion, in that illusion's own difference units (the
+peak of the smoothed human curve):
 
-**Baseline competence** (d′ at k = 0), which gates interpretation of every
-other measure:
-
-| Illusion | Human d′₀ | GPT-5.2 d′₀ | Human c₀ | GPT-5.2 c₀ |
+| Müller-Lyer | Vertical-Horizontal | Ponzo | Ebbinghaus | Contrast |
 |---|---|---|---|---|
-| Müller-Lyer | 2.99 | 3.48 | −0.07 | **+0.76** |
-| Vertical-Horizontal | 2.47 | 4.72 | −0.18 | −0.17 |
-| Ponzo | 2.76 | 4.81 | +0.11 | **−0.82** |
-| Ebbinghaus | 2.75 | 3.56 | +0.02 | **−1.45** |
-| Delboeuf | 2.82 | 4.44 | −0.01 | **−1.01** |
-| Contrast | 4.02 | 5.20 | +0.01 | −0.30 |
-| Rod-Frame | 1.87 | **0.51** | +0.02 | +0.20 |
+| 0.415 | 0.193 | 0.252 | 0.355 | 12.04 |
 
-Two things to state plainly in the text: the model is *more* sensitive than
-humans at baseline on six of seven illusions (it was untimed, humans were
-not), and it carries large constant side biases where humans carry none. On
-Rod-Frame the model's baseline d′ of 0.51 is near chance, so its
-sensitivity ratio is undefined and is left blank in panel C.
+Two levels are less well constrained than the rest:
+
+- **Vertical-Horizontal, GPT-5.2.** At three of the seven strengths
+  (|k| = 1, 4 and 7) the PSE in one direction lies beyond the largest tested
+  difference. Their intervals are wide and one-sided, so they carry little
+  weight in the smooth.
+- **Müller-Lyer, humans, |k| = 7.** The PSE sits at the fitting bound.
 
 ---
 
-## Figure 3 — Congruency effects, head to head
+## Figure 3 — Error rate
 
-> **Figure 3. Both species show a graded congruency effect, with aligned
-> profiles.** (**A**) Error rate against signed illusion strength for each
-> illusion, on the shared grid. Congruent strengths lie left of zero,
-> incongruent right; the dashed line marks chance. (**B**) Each illusion's
-> mean incongruent error rate in the model against that in humans, with the
-> identity line. Labels abbreviate the illusion names of panel A. Pearson
-> r = 0.68 (p = 0.094), Spearman ρ = 0.64 (p = 0.119), n = 7 illusions.
->
-> Humans responded under time pressure (RT 500–1300 ms) and the model was
-> untimed, so the absolute level of the curves is not comparable between
-> species; their shape and their ordering across illusions are.
+> **Figure 3. Error rate against illusion strength, in humans and GPT-5.2.**
+> (**A–E**) Percentage of incorrect answers at each illusion strength, pooled
+> over all differences tested at that strength. Strength is normalised to the
+> strongest tested level. Negative strengths are congruent (the context
+> supports the correct answer) and positive strengths are incongruent (the
+> context opposes it). Curves are natural cubic regression splines in strength
+> (6 basis functions), fitted by binomial regression to the counts at the 15
+> tested strengths. Bands are 95% confidence intervals, widened for
+> overdispersion (quasi-binomial) because each strength pools observers who
+> differ in susceptibility. Humans responded under time pressure and GPT-5.2
+> was untimed, so the absolute level of the curves is not comparable between
+> species; their shape is.
 
-The congruent < baseline < incongruent ordering holds in both species for all
-seven illusions, with two model exceptions where baseline competence is itself
-poor (Ebbinghaus, Rod-Frame). The profile correlation is positive but **not
-significant at n = 7** — report it as suggestive, not established.
+Trials per strength: humans 2,048 (4,024 at zero strength). GPT-5.2: 800
+(1,600 at zero), or 880 (1,760) for Müller-Lyer.
 
-| Illusion | Human cong / incong | GPT-5.2 cong / incong |
+---
+
+## Figure 4 — Relative to humans
+
+> **Figure 4. Each illusion's effect on GPT-5.2, relative to its effect on
+> humans.** Each bar is GPT-5.2's summary divided by the human one. The dashed
+> line marks the human effect, which is 1 by definition, so a bar at the line
+> means the illusion affects the model as much as it affects people. (**A**)
+> Perceptual shift: the Figure 2 curve averaged over strengths from 0 to +1.
+> The curves are symmetric by construction, so the negative half adds nothing.
+> (**B**) Error rate: the Figure 3 curve averaged over incongruent strengths,
+> minus its average over congruent strengths. This is the error the illusion
+> adds; subtracting the congruent side removes the baseline error, which
+> differs between species because humans were speeded and GPT-5.2 was not.
+> Both summaries come from the same fits as Figures 2 and 3. Whiskers are 95%
+> confidence intervals for the ratio (Fieller's method), which carry the
+> uncertainty of both the GPT-5.2 and the human estimate. In each panel,
+> illusions are ordered by GPT-5.2's value, largest first.
+
+GPT-5.2 relative to humans, with 95% intervals, in the figure's order. Both
+panels rank the illusions identically.
+
+| Illusion | Perceptual shift | Error rate |
 |---|---|---|
-| Müller-Lyer | 0.029 / 0.625 | 0.030 / 0.455 |
-| Vertical-Horizontal | 0.043 / 0.532 | 0.042 / 0.600 |
-| Ponzo | 0.036 / 0.374 | 0.074 / 0.158 |
-| Ebbinghaus | 0.044 / 0.350 | 0.093 / 0.217 |
-| Delboeuf | 0.086 / 0.327 | 0.007 / 0.351 |
-| Contrast | 0.044 / 0.397 | 0.016 / 0.324 |
-| Rod-Frame | 0.104 / 0.454 | 0.265 / 0.534 |
+| Vertical-Horizontal | 1.02 (0.87–1.19) | 1.17 (0.93–1.43) |
+| Contrast | 0.91 (0.75–1.07) | 0.86 (0.62–1.15) |
+| Müller-Lyer | 0.62 (0.56–0.69) | 0.70 (0.58–0.82) |
+| Ebbinghaus | 0.34 (0.11–0.57) | 0.43 (0.19–0.69) |
+| Ponzo | 0.20 (0.05–0.35) | 0.25 (0.00–0.50) |
+
+The error effects behind panel B, in percentage points (incongruent minus
+congruent), human / GPT-5.2: Müller-Lyer 54.0 / 37.6, Vertical-Horizontal
+44.4 / 51.8, Ponzo 29.1 / 7.2, Ebbinghaus 26.8 / 11.5, Contrast 31.4 / 27.1.
+
+The two panels are computed from separate data and separate fits, yet agree:
+on every illusion the two intervals overlap. On both measures,
+Vertical-Horizontal and Contrast are consistent with the human effect,
+Müller-Lyer is below it, and Ponzo and Ebbinghaus are far below it.
+
+**How the intervals are computed.** Each summary is a function of its spline
+coefficients. The mean shift is linear in them, so its variance is exact
+given their covariance. The error effect goes through the logistic link, so
+its variance comes from the delta method. Both use the same dispersion
+correction as the drawn bands. The GPT-5.2 and human summaries come from
+independent fits, so Fieller's interval combines their variances directly.
+The pointwise bands in Figures 2 and 3 are not used, since they carry no
+information on how the points along a curve covary.
+
+**Why not the value at full strength.** An earlier version used each curve's
+value at +1. That is where a smooth is least well pinned, and two of those
+values differed markedly from the raw data at the strongest tested level
+(Ponzo humans, raw 1.26 against a drawn 1.00; Vertical-Horizontal GPT-5.2,
+raw 1.41 against 0.81). The average over the range uses all seven tested
+strengths and is not driven by the end point.
 
 ---
 
-## Figure 4 — The asymmetry dissociation
+## Notes for the Methods
 
-> **Figure 4. The congruency effect is symmetric in humans and directional in
-> GPT-5.2.** (**A**) Mean |error asymmetry| over incongruent strengths, where
-> asymmetry is the difference in error rate between trials whose correct answer
-> is the positive and the negative option. A purely masking illusion gives
-> zero. (**B**) |Baseline criterion| with the illusion switched off — the
-> constant side bias each observer brings to the task. (**C**) The model's
-> asymmetry against its own constant side bias. The two are unrelated
-> (r = −0.31, p = 0.50, n = 7), so the asymmetry is illusion-specific rather
-> than a constant preference showing through.
+**Held out of the figures.** Both illusions stay in the dataset and in every
+analysis table.
 
-This is the strongest human–model contrast in the data. Human |asymmetry| is
-≤ 0.075 on every illusion (mean 0.043); the model reaches 0.54.
+- **Rod-Frame.** A psychometric function does not describe GPT-5.2's
+  responses. In 12 of its 14 direction slices, the response curve doubles
+  back. The other illusions have at most 4 of 14, and humans have none.
+- **Delboeuf.** GPT-5.2 treats a ring drawn close around a disc as the disc's
+  own edge. Where judging the disc and judging the ring's outer edge give
+  different answers, it follows the outer edge on 94% of trials at the
+  tightest ring (1.14× the disc). At the loosest ring (1.78×) it does so on
+  15% of trials. Humans do so on about 10% throughout. Its Delboeuf curve
+  therefore measures a failure to separate a figure from its surround, not
+  susceptibility to the illusion. Our Delboeuf stimuli also differ from the
+  human ones (next note).
 
-| Illusion | Human | GPT-5.2 |
-|---|---|---|
-| Müller-Lyer | 0.072 | **0.541** |
-| Vertical-Horizontal | 0.018 | **0.461** |
-| Rod-Frame | 0.026 | **0.375** |
-| Delboeuf | 0.025 | 0.254 |
-| Ebbinghaus | 0.035 | 0.249 |
-| Contrast | 0.075 | 0.185 |
-| Ponzo | 0.048 | 0.144 |
+**Stimulus versions.** The human data were collected in August 2022 with
+Pyllusion 1.2, and our stimuli were generated with a later version. Of the
+five illusions shown, only the Ebbinghaus generator changed in between. Commit
+f472ebac (13 October 2022) mirrors the distractor layout between the two
+sides, and a later commit adds a colour argument. The other four illusions
+are generated by identical code. The Delboeuf generator changed materially
+(commit 4ee0c33c), which is part of why it is held out.
 
-**Limitation to state in the text.** The response options are always named in
-the same order in the prompt, so a preference for the first- or last-named
-option cannot be distinguished from a preference for that side. Panel C rules
-out the *constant* side bias as the explanation but not option ordering. The
-control is a re-run with the option order reversed; it has not been done. The
-direction is not consistent across illusions (Müller-Lyer favours the
-second-named option, Ebbinghaus the first), which argues against a pure
-ordering effect but does not settle it.
+**Sign convention.** For every illusion, negative strength is congruent and
+positive strength is incongruent. Contrast follows this without the axis flip
+that Pyllusion's changelog suggests for comparisons with human data: in both
+species, errors are rare at negative strength and common at positive strength
+(Figure 3E).
 
----
+**Psychometric fits (Figure 2).** At each absolute strength, the two
+directions are fitted as one cumulative-Gaussian model by binomial maximum
+likelihood. Each direction has its own PSE; the slope and the two lapse rates
+are shared. 95% intervals come from the profile likelihood. The smooth weights
+each level by 1/SE², with SE taken from the width of that interval.
 
-## Figure 5 — Where physical evidence stops governing the response
-
-> **Figure 5. The strength at which the illusion overrides the physical
-> evidence.** (**A**) Every (illusion, strength) cell classified by the shape
-> of its response function, using a model-free criterion: *monotonic* (rises
-> with Δ and accurate at large |Δ|), *bias-dominated* (accurate at large |Δ|,
-> errors concentrated at small |Δ|), *reversal* (P(positive) falls as Δ rises,
-> so no monotonic function describes the data and any fitted PSE is an
-> artifact), and *breakdown* (inaccurate even at the largest |Δ|). The first
-> two admit a PSE; the last two do not. (**B**) Each row reduced to its
-> crossover: the smallest incongruent k from which no higher k remains
-> PSE-estimable. Markers are dodged vertically so coincident values stay
-> visible; "never" marks an illusion that retains PSE-estimability throughout.
-
-Crossover k, per species:
-
-| Illusion | Human | GPT-5.2 |
-|---|---|---|
-| Müller-Lyer | 2 | 5 |
-| Vertical-Horizontal | 3 | 1 |
-| Ponzo | 5 | never |
-| Ebbinghaus | 5 | never |
-| Delboeuf | never | never |
-| Contrast | 5 | 5 |
-| Rod-Frame | 4 | 2 |
-
-**Why this figure exists.** It is the disclosure that makes the PSE-based
-framing of the earlier pilot analysis safe to abandon in print: a reviewer who
-plots the raw cells will see the V-shape, and this figure says exactly where
-it starts and that humans show it too.
-
----
-
-## Method notes that belong in the manuscript
-
-**Sign conventions.** Canonically, k > 0 is incongruent for every illusion.
-Two corrections were needed, both established from the data and the rendered
-stimuli rather than from library changelogs:
-
-- **Delboeuf is inverted in our stimuli** and its strength axis is flipped at
-  analysis time. Model accuracy was 0.812 at extreme negative strength versus
-  0.992 at extreme positive — the opposite ordering to every other illusion
-  and to the human data. Confirmed visually: at `str-2.17_diff+0.70` the
-  surrounding ring sits on the smaller circle, opposing the correct answer.
-- **Contrast needs no flip**, contrary to the note in `config.py` taken from
-  Pyllusion's changelog. Human accuracy is 0.950 (negative) versus 0.420
-  (positive) and the model's 0.958 versus 0.516 — both already canonical.
-  Applying the documented flip would misalign the congruency axis.
-
-Figure 1 independently confirms both: the congruent Delboeuf panel shows the
-ring on the larger circle, and the congruent Contrast panel shows the lighter
-patch on the darker surround.
-
-**Psychometric fitting.** Where a PSE is reported it comes from a
-four-parameter cumulative Gaussian (PSE, slope, two lapse rates) fitted by
-binomial maximum likelihood, with bounds scaled to each illusion's own Δ grid
-and 95% intervals from the profile likelihood. Median fit R² is 0.986 for
-retained PSEs and 0.595 for rejected ones.
-
-**Aggregation caveat.** The human curves are population averages over 256
-participants with one trial per cell each, so they mix between- and
-within-participant variability and their slopes are shallower than any
-individual's. Bias comparisons are robust to this; slope and JND comparisons
-are not, and should use the hierarchical per-participant scores in
-`study3.csv` instead.
-
-## Not available from the current data
-
-- **Confidence dip at the point of maximum conflict.** The participant JSONL
-  records only `response` and `correct`; no `top_logprobs`. Needs a re-run.
-- **Reaction-time analogue.** Same reason.
-- **Cross-model or scaling comparisons.** Only `gpt-5.2` in `results/`.
-- **3D / naturalistic transfer.** No stimuli generated yet.
+**Aggregation.** The human curves pool 256 participants with one trial per
+cell each, so they mix between- and within-participant variability. This
+overdispersion is why the Figure 3 bands are widened; a model with a random
+effect per participant is the stricter alternative.
