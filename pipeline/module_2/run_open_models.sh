@@ -31,6 +31,13 @@ set -euo pipefail
 # environment.txt record the installed version either way.
 VLLM_SPEC="${VLLM_SPEC:-vllm>=0.11}"
 
+# vLLM and PyTorch must be built for the CUDA version the pod's driver
+# supports. Plain `pip install vllm` takes the newest build, which on a
+# CUDA 12.8 pod fails at engine startup with "The NVIDIA driver on your system
+# is too old". uv picks the matching build; "auto" reads the driver, and
+# TORCH_BACKEND=cu128 (etc.) forces one.
+TORCH_BACKEND="${TORCH_BACKEND:-auto}"
+
 cd "$(dirname "$0")/../.."
 REPO_ROOT="$(pwd)"
 
@@ -91,11 +98,41 @@ fi
 export PYTHONUNBUFFERED=1
 
 # 3. Dependencies -------------------------------------------------------------
+# The published vLLM wheels are built against CUDA 13: on a pod whose driver
+# only supports CUDA 12.x they fail either in torch ("The NVIDIA driver on your
+# system is too old") or in vLLM's own extension ("libcudart.so.13: cannot open
+# shared object file"). Installing a CUDA 12 build of torch does not help,
+# because the vLLM extension is the part that needs CUDA 13. Deploy a pod whose
+# driver supports CUDA 13 instead; on RunPod, filter the GPU list by CUDA
+# version. REQUIRED_CUDA=12 skips this guard if a future wheel allows it.
+driver_cuda="$(nvidia-smi -q 2>/dev/null | awk -F': *' '/CUDA Version/ {print $2; exit}')"
+log "Driver supports CUDA ${driver_cuda:-unknown}"
+case "${driver_cuda%%.*}" in
+    ''|*[!0-9]*) echo "WARNING: could not read the driver's CUDA version." ;;
+    *)
+        if [ "${driver_cuda%%.*}" -lt "${REQUIRED_CUDA:-13}" ]; then
+            echo "This pod's driver supports CUDA $driver_cuda, but the vLLM wheels need CUDA ${REQUIRED_CUDA:-13}." >&2
+            echo "Deploy a pod whose driver supports CUDA ${REQUIRED_CUDA:-13} (filter the GPU list by CUDA version)." >&2
+            exit 1
+        fi
+        ;;
+esac
+
 if [ "$skip_install" -eq 0 ]; then
-    log "Installing $VLLM_SPEC, pillow, pandas"
-    python -m pip install --quiet "$VLLM_SPEC" pillow pandas
+    log "Installing $VLLM_SPEC for CUDA backend '$TORCH_BACKEND', plus pillow and pandas"
+    python -m pip install --quiet uv
+    # --break-system-packages: the pod image marks its Python as externally
+    # managed (Debian), which uv refuses to touch without it. pip on these
+    # images is already configured to allow it.
+    uv pip install --system --break-system-packages --quiet \
+        --torch-backend="$TORCH_BACKEND" "$VLLM_SPEC"
+    python -m pip install --quiet pillow pandas
 fi
-python -c "import vllm; print('vLLM', vllm.__version__)"
+python -c "
+import torch, vllm
+print('vLLM', vllm.__version__, '| torch', torch.__version__, '| built for CUDA', torch.version.cuda)
+"
+nvidia-smi --query-gpu=name,driver_version --format=csv,noheader
 
 # 4. GPUs ---------------------------------------------------------------------
 available_gpus="$(nvidia-smi -L | wc -l)"
