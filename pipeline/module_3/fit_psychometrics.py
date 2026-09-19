@@ -195,13 +195,15 @@ def fit_pse(diff_values: np.ndarray, prop_positive: np.ndarray) -> dict:
 def run_fitting(
     illusion: dict,
     results_root: Path,
+    model: str = MODEL,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Load participants, aggregate, fit PSEs, and save CSVs.
 
     Args:
         illusion:     Illusion config dict.
-        results_root: Top-level results directory (e.g. Path("results")).
+        results_root: The model's results directory (e.g. Path("results/gpt-5.2")).
+        model:        Model name recorded in the diagnostic CSVs.
 
     Returns:
         (psychometric_data, pse_summary) DataFrames.
@@ -253,16 +255,16 @@ def run_fitting(
     # ── Diagnostic exports ────────────────────────────────────────────────────
     print()
     agg_df = export_aggregated_responses(
-        df, psych_data, illusion, illusion_results_dir, MODEL
+        df, psych_data, illusion, illusion_results_dir, model
     )
     diag_df = export_fit_diagnostics(
-        psych_data, pse_df, illusion, illusion_results_dir, MODEL
+        psych_data, pse_df, illusion, illusion_results_dir, model
     )
     baseline_df = export_baseline_summary(
-        df, pse_df, illusion, illusion_results_dir, MODEL
+        df, pse_df, illusion, illusion_results_dir, model
     )
     export_illusion_summary(
-        diag_df, baseline_df, psych_data, illusion, illusion_results_dir, MODEL
+        diag_df, baseline_df, psych_data, illusion, illusion_results_dir, model
     )
 
     return psych_data, pse_df

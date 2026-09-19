@@ -40,7 +40,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-from pipeline.figures.selection import DISPLAY_NAMES, FIGURE_ILLUSIONS
+from pipeline.figures.selection import DISPLAY_NAMES, FIGURE_ILLUSIONS, models_present
 from pipeline.figures.figstyle import (
     INK_PRIMARY,
     apply_style,
@@ -51,8 +51,6 @@ from pipeline.figures.figstyle import (
 )
 from pipeline.figures.panels import fig2_perceptual_shift, fig3_congruency
 from pipeline.figures.smoothing import error_effect, mean_magnitude
-
-MODELS = ("vlm",)
 
 _Z95 = 1.959964
 
@@ -76,7 +74,10 @@ def fieller_interval(
     return (a * b - half) / denom, (a * b + half) / denom
 
 
-def relative_to_humans(summaries: dict[str, dict[str, tuple[float, float] | None]]):
+def relative_to_humans(
+    summaries: dict[str, dict[str, tuple[float, float] | None]],
+    models: list[str],
+):
     """
     Each model's summary as a fraction of the human one, with its interval.
 
@@ -86,12 +87,12 @@ def relative_to_humans(summaries: dict[str, dict[str, tuple[float, float] | None
     by model, in the layout grouped_bars takes.
     """
     names: list[str] = []
-    values: dict[str, list[float]] = {m: [] for m in MODELS}
-    intervals: dict[str, list[tuple[float, float]]] = {m: [] for m in MODELS}
+    values: dict[str, list[float]] = {m: [] for m in models}
+    intervals: dict[str, list[tuple[float, float]]] = {m: [] for m in models}
     for illusion, by_species in summaries.items():
         names.append(DISPLAY_NAMES[illusion])
         human = by_species.get("human")
-        for model in MODELS:
+        for model in models:
             est = by_species.get(model)
             if human is None or est is None:
                 values[model].append(np.nan)
@@ -102,13 +103,14 @@ def relative_to_humans(summaries: dict[str, dict[str, tuple[float, float] | None
     return names, values, intervals
 
 
-def largest_first(names, values, intervals, by: str = MODELS[0]):
+def largest_first(names, values, intervals, by: str):
     """
     Reorder a panel's illusions by one series' value, largest first.
 
     Each panel is sorted on its own values, so the ranking in each panel is
     read left to right without cross-referencing. An illusion the series
-    lacks goes last.
+    lacks goes last. The figure sorts on the first model in config.MODELS
+    (GPT-5.2), so adding models never reorders the illusions.
     """
     key = np.nan_to_num(np.asarray(values[by], dtype=float), nan=-np.inf)
     order = np.argsort(-key, kind="stable")
@@ -125,6 +127,8 @@ def build(paper_dir: Path, out_path: Path) -> None:
 
     magnitudes = fig2_perceptual_shift.load(paper_dir)
     by_strength = fig3_congruency.load(paper_dir)
+    models = models_present(magnitudes)
+    species = ["human"] + models
 
     shift = largest_first(*relative_to_humans(
         {
@@ -132,20 +136,22 @@ def build(paper_dir: Path, out_path: Path) -> None:
                 sp: mean_magnitude(
                     fig2_perceptual_shift.levels_for(magnitudes, name, sp)
                 )
-                for sp in ("human",) + MODELS
+                for sp in species
             }
             for name in FIGURE_ILLUSIONS
-        }
-    ))
+        },
+        models,
+    ), by=models[0])
     error = largest_first(*relative_to_humans(
         {
             name: {
                 sp: error_effect(fig3_congruency.cells_for(by_strength, name, sp))
-                for sp in ("human",) + MODELS
+                for sp in species
             }
             for name in FIGURE_ILLUSIONS
-        }
-    ))
+        },
+        models,
+    ), by=models[0])
 
     # One scale for both panels, so B shares A's tick labels. The floor sits
     # just below zero, as in Figure 3, so a whisker ending at zero keeps its cap.
@@ -175,7 +181,7 @@ def build(paper_dir: Path, out_path: Path) -> None:
         ax = fig.add_subplot(gs[0, i])
         hide_spines(ax)
         reference_line(ax, 1.0)
-        grouped_bars(ax, names, values, intervals, order=MODELS)
+        grouped_bars(ax, names, values, intervals, order=models)
         ax.set_ylim(bottom, top)
         ax.set_yticks(np.arange(0, top, 0.5))
         ax.set_title(title, fontsize=7.4, color=INK_PRIMARY, pad=4)
@@ -198,7 +204,7 @@ def build(paper_dir: Path, out_path: Path) -> None:
 
     # Stacked as in Figures 2 and 3, left-aligned against the last panel.
     species_legend(
-        ax, order=MODELS, reference="human", loc="center left", bbox_to_anchor=(1.06, 0.5)
+        ax, order=models, reference="human", loc="center left", bbox_to_anchor=(1.06, 0.5)
     )
 
     out_path.parent.mkdir(parents=True, exist_ok=True)

@@ -3,7 +3,7 @@ pipeline/module_2_query.py - Module 2: VLM querying (real-time).
 
 Iterates the illusion registry. For each illusion:
   1. Discovers all stimuli in stimuli/<name>/
-  2. Counts complete participant files already in results/<name>/participants/
+  2. Counts complete participant files already in results/<model>/<name>/participants/
   3. Generates only the remaining (N_PARTICIPANTS - already_complete) participants
   4. Each participant's responses are written to their own JSONL file
 
@@ -34,7 +34,9 @@ from pipeline.module_2.batch_processor import BatchProcessor
 from pipeline.module_2.query import VLMQuerier
 from pipeline.utils import discover_images
 
-RESULTS_ROOT = Path("results")
+# config.MODEL's results live in their own folder beside the other models';
+# see config.MODELS.
+RESULTS_ROOT = Path("results") / MODEL
 STIMULI_ROOT = Path("stimuli")
 
 

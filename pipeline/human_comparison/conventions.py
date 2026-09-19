@@ -122,21 +122,16 @@ def apply_canonical_signs(
 
     Args:
         df:           Trial-level or cell-level data.
-        species:      "vlm" or "human".
+        species:      "human", or a model key from config.MODELS. Every model
+                      saw our stimuli, so every model takes FLIP_VLM.
         illusion_col: Column holding our illusion name.
         strength_col: Column holding the signed illusion strength.
 
     Returns:
         A copy with the sign corrected and a `strength_sign_flipped` column
         recording which rows were changed, so figures can disclose it.
-
-    Raises:
-        ValueError: on an unknown species.
     """
-    if species not in ("vlm", "human"):
-        raise ValueError(f"species must be 'vlm' or 'human', got {species!r}")
-
-    flips = FLIP_VLM if species == "vlm" else FLIP_HUMAN
+    flips = FLIP_HUMAN if species == "human" else FLIP_VLM
     out = df.copy()
     mask = out[illusion_col].isin(flips)
     out.loc[mask, strength_col] = -out.loc[mask, strength_col]

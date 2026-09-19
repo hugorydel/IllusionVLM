@@ -33,7 +33,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from pipeline.figures.selection import DISPLAY_NAMES, FIGURE_ILLUSIONS
+from pipeline.figures.selection import DISPLAY_NAMES, FIGURE_ILLUSIONS, species_present
 from pipeline.figures.figstyle import (
     INK_PRIMARY,
     SERIES,
@@ -41,6 +41,7 @@ from pipeline.figures.figstyle import (
     centred_panel_grid,
     hide_spines,
     legend_panel,
+    line_style,
 )
 from pipeline.figures.smoothing import smooth_error_rate
 
@@ -70,7 +71,7 @@ def curves(by_strength: pd.DataFrame) -> dict[str, dict[str, pd.DataFrame]]:
     out: dict[str, dict[str, pd.DataFrame]] = {}
     for name in FIGURE_ILLUSIONS:
         out[name] = {}
-        for species in ("human", "vlm"):
+        for species in species_present(by_strength):
             sub = cells_for(by_strength, name, species)
             curve = smooth_error_rate(sub) if not sub.empty else None
             if curve is not None:
@@ -91,14 +92,15 @@ def _draw_curve(ax, curve: pd.DataFrame, species: str) -> None:
         lw=0,
         zorder=2,
     )
-    ax.plot(curve["x"], curve["fit"], color=SERIES[species], lw=1.2, zorder=3)
+    ax.plot(curve["x"], curve["fit"], lw=1.2, zorder=3, **line_style(species))
 
 
 def build(paper_dir: Path, out_path: Path) -> None:
     """Render Figure 3 to `out_path`."""
     apply_style(base_font=7.5)
 
-    by_illusion = curves(load(paper_dir))
+    by_strength = load(paper_dir)
+    by_illusion = curves(by_strength)
 
     # One slot per illusion plus one for the legend.
     fig = plt.figure(figsize=(6.0, 3.3))
@@ -147,7 +149,7 @@ def build(paper_dir: Path, out_path: Path) -> None:
             ha="left",
         )
 
-    legend_panel(axes[-1])
+    legend_panel(axes[-1], species_present(by_strength))
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path)

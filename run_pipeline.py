@@ -163,7 +163,7 @@ def main():
 
 
 def _state_file(illusion_name: str) -> Path:
-    return RESULTS_ROOT / illusion_name / "_batch_tmp" / "batch_state.json"
+    return RESULTS_ROOT / MODEL / illusion_name / "_batch_tmp" / "batch_state.json"
 
 
 def _run_batch(illusions: list[dict], args, modules: set[int]) -> None:

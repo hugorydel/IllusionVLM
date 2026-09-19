@@ -1,10 +1,11 @@
 """
 Figure S1 - Error rate against illusion strength, split by task difficulty.
 
-One row per species, one column per illusion. Each line is one difficulty band:
-the eight |difference| levels pooled in adjacent pairs by rank, hardest (the
-two smallest differences) to easiest (the two largest). Pooling in pairs is
-what lets every band have a value at every strength in both species - the
+One row per species (humans, then each model with data), one column per
+illusion. Each line is one difficulty band: the eight |difference| levels
+pooled in adjacent pairs by rank, hardest (the two smallest differences) to
+easiest (the two largest). Pooling in pairs is what lets every band have a
+value at every strength for every species - the
 human design shows only every other difference at each strength, and each pair
 contains one level from each alternation.
 
@@ -27,15 +28,19 @@ import numpy as np
 import pandas as pd
 from matplotlib.lines import Line2D
 
+from matplotlib.colors import to_hex, to_rgb
+
 from pipeline.figures.figstyle import (
     COOL_RAMP,
     INK_PRIMARY,
+    SERIES,
     SPECIES_LABEL,
+    SURFACE,
     WARM_RAMP,
     apply_style,
     hide_spines,
 )
-from pipeline.figures.selection import DISPLAY_NAMES, FIGURE_ILLUSIONS
+from pipeline.figures.selection import DISPLAY_NAMES, FIGURE_ILLUSIONS, species_present
 from pipeline.human_comparison.metrics import add_difficulty_bins
 
 N_BANDS = 4
@@ -47,8 +52,28 @@ YLIM = (-4.0, 100.0)
 # gets the strongest ink.
 RAMPS = {
     "human": [COOL_RAMP[i] for i in (3, 5, 7, 9)],
-    "vlm": [WARM_RAMP[i] for i in (3, 5, 7, 9)],
+    "gpt-5.2": [WARM_RAMP[i] for i in (3, 5, 7, 9)],
 }
+
+# Figure geometry per species row, in inches, so the figure grows with the
+# number of models and two rows keep the original 7.2 x 3.3 layout.
+ROW_HEIGHT = 1.254
+TOP_MARGIN = 0.33
+BOTTOM_MARGIN = 0.462
+
+
+def ramp(species: str) -> list[str]:
+    """
+    Four shades of the species' colour, easiest (lightest) to hardest.
+
+    Humans and GPT-5.2 use steps of their hand-built ramps; the other models
+    blend their series colour towards the surface, which keeps the hardest
+    band at the colour that identifies the model everywhere else.
+    """
+    if species in RAMPS:
+        return RAMPS[species]
+    base, surface = np.array(to_rgb(SERIES[species])), np.array(to_rgb(SURFACE))
+    return [to_hex(base + (surface - base) * t) for t in (0.6, 0.4, 0.2, 0.0)]
 
 
 def load(paper_dir: Path) -> pd.DataFrame:
@@ -88,18 +113,20 @@ def build(paper_dir: Path, out_path: Path) -> None:
     """Render Figure S1 to `out_path`."""
     apply_style(base_font=7.5)
 
-    errors = error_by_band(load(paper_dir))
-    species_rows = ("human", "vlm")
+    cells = load(paper_dir)
+    errors = error_by_band(cells)
+    species_rows = species_present(cells)
     n_cols = len(FIGURE_ILLUSIONS)
 
-    fig = plt.figure(figsize=(7.2, 3.3))
+    height = TOP_MARGIN + BOTTOM_MARGIN + ROW_HEIGHT * len(species_rows)
+    fig = plt.figure(figsize=(7.2, height))
     gs = fig.add_gridspec(
         len(species_rows),
         n_cols,
         left=0.075,
         right=0.86,
-        top=0.9,
-        bottom=0.14,
+        top=1 - TOP_MARGIN / height,
+        bottom=BOTTOM_MARGIN / height,
         hspace=0.32,
         wspace=0.14,
     )
@@ -115,7 +142,7 @@ def build(paper_dir: Path, out_path: Path) -> None:
                 ax.plot(
                     line["x"],
                     line["error_pct"],
-                    color=RAMPS[species][band],
+                    color=ramp(species)[band],
                     lw=0.9,
                     marker="o",
                     markersize=1.8,
@@ -129,6 +156,7 @@ def build(paper_dir: Path, out_path: Path) -> None:
             ax.set_xticklabels(["-1", "0", "1"])
             if r == 0:
                 ax.set_title(DISPLAY_NAMES[illusion], fontsize=7.4, color=INK_PRIMARY, pad=4)
+            if r < len(species_rows) - 1:
                 ax.set_xticklabels([])
             else:
                 ax.set_xlabel("Illusion Strength", fontsize=7.2)
@@ -137,7 +165,7 @@ def build(paper_dir: Path, out_path: Path) -> None:
                 ax.text(
                     -0.5,
                     1.14,
-                    "AB"[r],
+                    "ABCDEFGH"[r],
                     transform=ax.transAxes,
                     fontsize=8.0,
                     fontweight="bold",
@@ -152,7 +180,7 @@ def build(paper_dir: Path, out_path: Path) -> None:
         # at the top as the lines stack.
         ax.legend(
             handles=[
-                Line2D([], [], color=RAMPS[species][band], lw=1.4)
+                Line2D([], [], color=ramp(species)[band], lw=1.4)
                 for band in reversed(range(N_BANDS))
             ],
             labels=[BAND_LABELS[band] for band in reversed(range(N_BANDS))],

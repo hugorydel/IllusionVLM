@@ -76,7 +76,7 @@ def _shared_grid(paper_dir: Path, illusion: str) -> set[tuple[float, float]]:
     """
     cells = pd.read_csv(paper_dir / "cells.csv")
     cells = cells[
-        (cells["species"] == "vlm") & (cells["illusion"] == illusion) & cells["shared"]
+        (cells["species"] != "human") & (cells["illusion"] == illusion) & cells["shared"]
     ]
     return set(zip(cells["illusion_strength"].round(5), cells["true_diff"].round(5)))
 

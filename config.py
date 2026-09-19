@@ -70,6 +70,62 @@ MAX_BATCH_REQUESTS: int = 6000
 JPEG_QUALITY = 90
 
 # ============================================================================
+# MODELS COMPARED
+# ============================================================================
+# Every model whose responses the analysis reads, in the order the figures
+# list them. `key` names the model's folder under results/; `backend` says which
+# Module 2 path produces its responses:
+#     "openai" - pipeline/module_2_query.py or the batch API (MODEL above)
+#     "vllm"   - pipeline/module_2/local_vlm.py, run on a rented GPU
+# `n_gpus` is the tensor-parallel size vLLM needs to hold the model in bf16 on
+# 80 GB cards. All open models are the Instruct (non-thinking) variants.
+MODELS = [
+    {"key": "gpt-5.2", "label": "GPT-5.2", "backend": "openai"},
+    {
+        "key": "qwen3-vl-2b",
+        "label": "Qwen3-VL-2B",
+        "backend": "vllm",
+        "hf_id": "Qwen/Qwen3-VL-2B-Instruct",
+        "n_gpus": 1,
+    },
+    {
+        "key": "qwen3-vl-8b",
+        "label": "Qwen3-VL-8B",
+        "backend": "vllm",
+        "hf_id": "Qwen/Qwen3-VL-8B-Instruct",
+        "n_gpus": 1,
+    },
+    {
+        "key": "qwen3-vl-32b",
+        "label": "Qwen3-VL-32B",
+        "backend": "vllm",
+        "hf_id": "Qwen/Qwen3-VL-32B-Instruct",
+        "n_gpus": 1,
+    },
+    {
+        "key": "internvl3.5-2b",
+        "label": "InternVL3.5-2B",
+        "backend": "vllm",
+        "hf_id": "OpenGVLab/InternVL3_5-2B",
+        "n_gpus": 1,
+    },
+    {
+        "key": "internvl3.5-8b",
+        "label": "InternVL3.5-8B",
+        "backend": "vllm",
+        "hf_id": "OpenGVLab/InternVL3_5-8B",
+        "n_gpus": 1,
+    },
+    {
+        "key": "internvl3.5-38b",
+        "label": "InternVL3.5-38B",
+        "backend": "vllm",
+        "hf_id": "OpenGVLab/InternVL3_5-38B",
+        "n_gpus": 2,
+    },
+]
+
+# ============================================================================
 # GRID HELPERS
 # ============================================================================
 

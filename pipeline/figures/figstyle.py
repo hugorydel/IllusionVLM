@@ -30,6 +30,8 @@ import matplotlib as mpl
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 
+from config import MODELS
+
 # ============================================================================
 # INK AND SURFACES
 # ============================================================================
@@ -48,9 +50,36 @@ NEUTRAL_MID = "#f2f1ef"
 COOL = "#0E6E96"
 WARM = "#C8763C"
 
-SERIES = {"human": COOL, "vlm": WARM}
-SPECIES_LABEL = {"human": "Humans", "vlm": "GPT-5.2"}
-SPECIES_MARKER = {"human": "o", "vlm": "s"}
+# ============================================================================
+# SPECIES: HUMANS AND EVERY MODEL IN config.MODELS
+# ============================================================================
+#
+# Humans and GPT-5.2 keep the two temperature poles. Each open-model family
+# takes one further hue, lighter for smaller models. PROVISIONAL: eight
+# overlapping curves cannot pass every colour-vision check at once
+# (validate_palette.js: the InternVL greens collapse onto GPT-5.2's orange for
+# protanopes). InternVL is therefore also drawn dashed (LINESTYLE), and the
+# palette is to be revisited once the models' data show how they group.
+
+FAMILY_COLOURS = {
+    "qwen3-vl-2b": "#A68FEA",
+    "qwen3-vl-8b": "#7A58D2",
+    "qwen3-vl-32b": "#5534A8",
+    "internvl3.5-2b": "#74C98C",
+    "internvl3.5-8b": "#3A9B5C",
+    "internvl3.5-38b": "#17693A",
+}
+
+SERIES = {"human": COOL, "gpt-5.2": WARM, **FAMILY_COLOURS}
+SPECIES_LABEL = {"human": "Humans", **{m["key"]: m["label"] for m in MODELS}}
+SPECIES_ORDER = ["human"] + [m["key"] for m in MODELS]
+LINESTYLE = {key: (0, (3.2, 1.6)) for key in SERIES if key.startswith("internvl")}
+
+
+def line_style(species: str) -> dict:
+    """Colour and dash for one species' line."""
+    return {"color": SERIES[species], "linestyle": LINESTYLE.get(species, "-")}
+
 
 # ============================================================================
 # RAMPS
@@ -216,7 +245,7 @@ def reference_line(ax, y: float, series: str = "human") -> None:
 
 def species_legend(
     ax,
-    order: tuple[str, ...] = ("human", "vlm"),
+    order: list[str],
     reference: str | None = None,
     **placement,
 ):
@@ -253,7 +282,7 @@ def species_legend(
     )
 
 
-def legend_panel(ax, order: tuple[str, ...] = ("human", "vlm")) -> None:
+def legend_panel(ax, order: list[str]) -> None:
     """
     Use a spare grid slot for the species key.
 
@@ -271,7 +300,8 @@ def grouped_bars(
     categories: list[str],
     values: dict[str, list[float]],
     intervals: dict[str, list[tuple[float, float]]] | None = None,
-    order: tuple[str, ...] = ("human", "vlm"),
+    *,
+    order: list[str],
     bar_width: float = 0.2,
 ) -> None:
     """
@@ -284,10 +314,11 @@ def grouped_bars(
 
     The width is per bar, not per group: adding a series widens the group
     rather than thinning every bar. At 0.2, four series still fit within a
-    category with room between groups.
+    category with room between groups; beyond that the bars narrow so the
+    group never exceeds 0.8 of a category.
     """
     n = len(order)
-    width = bar_width
+    width = min(bar_width, 0.8 / n)
     x = np.arange(len(categories))
     for j, series in enumerate(order):
         offset = (j - (n - 1) / 2) * width

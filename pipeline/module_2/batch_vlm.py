@@ -5,12 +5,12 @@ Handles the three phases of an OpenAI Batch API job:
 
   submit    Identify missing (participant, image) pairs for a given illusion,
             build batch JSONL request files, upload, and submit. Saves state
-            to results/<illusion>/_batch_tmp/batch_state.json.
+            to results/<model>/<illusion>/_batch_tmp/batch_state.json.
 
   status    Poll the submitted batch(es) and print current progress.
 
   download  Download results, write participant_XX.jsonl files to
-            results/<illusion>/participants/, and report coverage against the
+            results/<model>/<illusion>/participants/, and report coverage against the
             target grid. A batch can reach a terminal status with some of its
             requests failed or expired; those appear only in the batch's error
             file, so it is read and tallied here. _batch_tmp/ is deleted only
@@ -53,6 +53,7 @@ from config import (
     MAX_BATCH_REQUESTS,
     MAX_DIMENSIONS,
     MAX_TOKENS,
+    MODEL,
     TEMPERATURE,
 )
 from pipeline.module_2.response_schema import make_chat_completions_schema
@@ -71,7 +72,9 @@ if __import__("sys").stdout.encoding != "utf-8":
     if hasattr(_sys.stderr, "reconfigure"):
         _sys.stderr.reconfigure(encoding="utf-8", errors="backslashreplace")
 
-RESULTS_ROOT = Path("results")
+# config.MODEL's results live in their own folder beside the other models';
+# see config.MODELS.
+RESULTS_ROOT = Path("results") / MODEL
 
 
 # ============================================================================

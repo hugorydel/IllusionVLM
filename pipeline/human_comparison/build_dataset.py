@@ -1,9 +1,10 @@
 """
 pipeline/human_comparison/build_dataset.py - Assemble the tidy tables the figures read.
 
-Puts both species through identical processing and writes the result to
-results/_paper/ so that figure code never touches raw data and every figure is
-guaranteed to be drawn from the same numbers.
+Puts humans and every model in config.MODELS through identical processing and
+writes the result to results/_paper/ so that figure code never touches raw data
+and every figure is guaranteed to be drawn from the same numbers. Each model's
+rows carry its key as `species`; humans are "human".
 
 Outputs
 -------
@@ -22,13 +23,16 @@ Outputs
                       and baseline competence
     by_strength.csv   descriptive error rates per SIGNED strength, for the
                       congruency figure only
-    shared_grid.csv   what the species share, and what was dropped
+    shared_grid.csv   per (model, illusion): what it shares with the humans,
+                      and what was dropped
     human_scores.csv  per-participant human sensitivity scores (study3)
+    probabilities.csv per (model, shared cell): the exact option probabilities,
+                      for the open models run locally (only when any exist)
 
-All comparisons are computed on the shared (strength, difference) grid. Our
-grid extends beyond the human one for several illusions; those extra cells are
-kept in cells.csv, flagged `shared=False`, and excluded from everything that
-contrasts the two species.
+All comparisons are computed on the shared (strength, difference) grid. The
+models' grid extends beyond the human one; those extra cells are kept in
+cells.csv, flagged `shared=False`, and excluded from everything that contrasts
+a model with humans.
 """
 
 from __future__ import annotations
@@ -38,6 +42,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from config import MODELS
 from pipeline.human_comparison.conventions import ILLUSION_ORDER, apply_canonical_signs
 from pipeline.human_comparison.human_data import (
     aggregate_psychometric_data,
@@ -64,18 +69,54 @@ OUT_DIR = Path("results/_paper")
 # ============================================================================
 
 
-def load_vlm_cells(results_root: Path) -> pd.DataFrame:
-    """Load every illusion's VLM response cells, canonically signed."""
-    frames = []
-    for illusion in ILLUSION_ORDER:
-        path = results_root / illusion / "psychometric_data.csv"
-        if not path.exists():
-            print(f"  ! missing {path}, skipping {illusion}")
-            continue
-        frames.append(pd.read_csv(path).assign(illusion=illusion))
+def _model_files(results_root: Path, filename: str) -> list[tuple[str, str, Path]]:
+    """(model key, illusion, path) for every model/illusion that has `filename`."""
+    found = []
+    for model in MODELS:
+        for illusion in ILLUSION_ORDER:
+            path = results_root / model["key"] / illusion / filename
+            if path.exists():
+                found.append((model["key"], illusion, path))
+    return found
+
+
+def load_model_cells(results_root: Path) -> pd.DataFrame:
+    """
+    Load every model's response cells, canonically signed.
+
+    Each model's rows carry its key from config.MODELS as `species`, so every
+    downstream table compares humans with each model the same way.
+    """
+    frames = [
+        apply_canonical_signs(
+            pd.read_csv(path).assign(illusion=illusion), key
+        ).assign(species=key)
+        for key, illusion, path in _model_files(results_root, "psychometric_data.csv")
+    ]
     if not frames:
-        raise FileNotFoundError(f"No VLM psychometric_data.csv found under {results_root}")
-    return apply_canonical_signs(pd.concat(frames, ignore_index=True), "vlm")
+        raise FileNotFoundError(
+            f"No psychometric_data.csv found under {results_root}/<model>/<illusion>/"
+        )
+    cells = pd.concat(frames, ignore_index=True)
+    for key, grp in cells.groupby("species", sort=False):
+        print(f"  {key}: {grp['illusion'].nunique()} illusions")
+    return cells
+
+
+def load_model_probabilities(results_root: Path) -> pd.DataFrame | None:
+    """
+    Load the exact per-stimulus option probabilities, where a model has them.
+
+    Only the open-weight models run through pipeline/module_2/local_vlm.py
+    record these; None when no model does.
+    """
+    frames = [
+        apply_canonical_signs(
+            pd.read_csv(path).assign(illusion=illusion), key
+        ).assign(species=key)
+        for key, illusion, path in _model_files(results_root, "probabilities.csv")
+    ]
+    return pd.concat(frames, ignore_index=True) if frames else None
 
 
 def load_human_cells(human_dir: Path) -> pd.DataFrame:
@@ -106,55 +147,61 @@ def build(results_root: Path, human_dir: Path, out_dir: Path = OUT_DIR) -> dict:
     """Build every table and write it to `out_dir`. Returns the frames."""
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    print("Loading VLM cells...")
-    vlm = load_vlm_cells(results_root)
-    print(f"  {len(vlm)} cells across {vlm['illusion'].nunique()} illusions")
+    print("Loading model cells...")
+    models = load_model_cells(results_root)
+    print(f"  {len(models)} cells across {models['species'].nunique()} model(s)")
 
     print("Loading human cells...")
     human = load_human_cells(human_dir)
     print(f"  {len(human)} cells across {human['illusion'].nunique()} illusions")
 
-    # Mark the shared grid per illusion.
-    shared_rows, v_parts, h_parts = [], [], []
-    for illusion in ILLUSION_ORDER:
-        v = vlm[vlm["illusion"] == illusion]
-        h = human[human["illusion"] == illusion]
-        if v.empty or h.empty:
-            continue
-        vs, hs, info = restrict_to_shared_grid(v, h)
-        shared_rows.append({"illusion": illusion, **{
-            k: val for k, val in info.items() if not isinstance(val, list)
-        }})
-        v_parts.append(vs)
-        h_parts.append(hs)
+    # Mark the shared grid per (model, illusion). Every model is tested on the
+    # same grid, so the human cells kept are the same whichever model they are
+    # matched against.
+    shared_rows, m_parts, h_parts = [], [], []
+    for key, model_cells in models.groupby("species", sort=False):
+        for illusion in ILLUSION_ORDER:
+            v = model_cells[model_cells["illusion"] == illusion]
+            h = human[human["illusion"] == illusion]
+            if v.empty or h.empty:
+                continue
+            vs, hs, info = restrict_to_shared_grid(v, h)
+            shared_rows.append({"species": key, "illusion": illusion, **{
+                k: val for k, val in info.items() if not isinstance(val, list)
+            }})
+            m_parts.append(vs)
+            h_parts.append(hs)
 
     shared = pd.DataFrame(shared_rows)
 
-    def tag_shared(full: pd.DataFrame, kept: pd.DataFrame) -> pd.DataFrame:
-        keys = set(
-            zip(
-                kept["illusion"],
-                kept["illusion_strength"].round(5),
-                kept["true_diff"].round(5),
+    def tag_shared(full: pd.DataFrame, kept: pd.DataFrame, by: list[str]) -> pd.DataFrame:
+        def keys(df):
+            return zip(
+                *(df[c] for c in by),
+                df["illusion_strength"].round(5),
+                df["true_diff"].round(5),
             )
-        )
+
+        kept_keys = set(keys(kept))
         full = full.copy()
-        full["shared"] = [
-            (i, s, d) in keys
-            for i, s, d in zip(
-                full["illusion"],
-                full["illusion_strength"].round(5),
-                full["true_diff"].round(5),
-            )
-        ]
+        full["shared"] = [k in kept_keys for k in keys(full)]
         return full
 
-    vlm = tag_shared(vlm, pd.concat(v_parts, ignore_index=True))
-    human = tag_shared(human, pd.concat(h_parts, ignore_index=True))
-
-    cells = pd.concat(
-        [vlm.assign(species="vlm"), human.assign(species="human")], ignore_index=True
+    models = tag_shared(
+        models, pd.concat(m_parts, ignore_index=True), ["species", "illusion"]
     )
+    human = tag_shared(human, pd.concat(h_parts, ignore_index=True), ["illusion"])
+
+    # `species` last, as the tables have always had it.
+    models = models[[c for c in models.columns if c != "species"] + ["species"]]
+    cells = pd.concat([models, human.assign(species="human")], ignore_index=True)
+
+    probabilities = load_model_probabilities(results_root)
+    if probabilities is not None:
+        probabilities = tag_shared(
+            probabilities, pd.concat(m_parts, ignore_index=True), ["species", "illusion"]
+        )
+        probabilities = probabilities[probabilities["shared"]].drop(columns="shared")
 
     # Everything comparative is computed on the shared grid only.
     shared_cells = cells[cells["shared"]].copy()
@@ -222,6 +269,8 @@ def build(results_root: Path, human_dir: Path, out_dir: Path = OUT_DIR) -> dict:
         "shared_grid": shared,
         "human_scores": human_scores,
     }
+    if probabilities is not None:
+        frames["probabilities"] = probabilities
     for name, frame in frames.items():
         path = out_dir / f"{name}.csv"
         frame.to_csv(path, index=False)

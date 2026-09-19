@@ -1,9 +1,10 @@
 """
 Figure S2 - Response surfaces: the raw choices behind Figures 2 and 3.
 
-One row per species, one column per illusion. Each cell is the proportion of
-trials on which the first-named option (Top or Left) was chosen, at one
-illusion strength (x) and one signed difference band (y).
+One row per species (humans, then each model with data), one column per
+illusion. Each cell is the proportion of trials on which the first-named
+option (Top or Left) was chosen, at one illusion strength (x) and one signed
+difference band (y).
 
 The difference axis uses the same four difficulty bands as Figure S1, signed:
 the bottom rows are differences favouring the second option, easiest at the
@@ -40,9 +41,15 @@ from pipeline.figures.figstyle import (
 )
 from pipeline.figures.panels.figS1_error_by_difficulty import N_BANDS
 from pipeline.figures.panels.figS1_error_by_difficulty import load as load_banded
-from pipeline.figures.selection import DISPLAY_NAMES, FIGURE_ILLUSIONS
+from pipeline.figures.selection import DISPLAY_NAMES, FIGURE_ILLUSIONS, species_present
 
 CMAP = "Greys"
+
+# Figure geometry per species row, in inches, so the figure grows with the
+# number of models and two rows keep the original 7.2 x 3.2 layout.
+ROW_HEIGHT = 1.216
+TOP_MARGIN = 0.32
+BOTTOM_MARGIN = 0.448
 
 
 def surface(cells: pd.DataFrame, species: str, illusion: str) -> tuple[np.ndarray, np.ndarray]:
@@ -70,18 +77,19 @@ def build(paper_dir: Path, out_path: Path) -> None:
     apply_style(base_font=7.5)
 
     cells = load_banded(paper_dir)
-    species_rows = ("human", "vlm")
+    species_rows = species_present(cells)
     n_cols = len(FIGURE_ILLUSIONS)
 
-    fig = plt.figure(figsize=(7.2, 3.2))
+    height = TOP_MARGIN + BOTTOM_MARGIN + ROW_HEIGHT * len(species_rows)
+    fig = plt.figure(figsize=(7.2, height))
     gs = fig.add_gridspec(
         len(species_rows),
         n_cols + 1,
         width_ratios=[1.0] * n_cols + [0.06],
         left=0.1,
         right=0.93,
-        top=0.9,
-        bottom=0.14,
+        top=1 - TOP_MARGIN / height,
+        bottom=BOTTOM_MARGIN / height,
         hspace=0.18,
         wspace=0.1,
     )
@@ -116,6 +124,7 @@ def build(paper_dir: Path, out_path: Path) -> None:
 
             if r == 0:
                 ax.set_title(DISPLAY_NAMES[illusion], fontsize=7.4, color=INK_PRIMARY, pad=4)
+            if r < len(species_rows) - 1:
                 ax.set_xticklabels([])
             else:
                 ax.set_xlabel("Illusion Strength", fontsize=7.2)
@@ -136,7 +145,7 @@ def build(paper_dir: Path, out_path: Path) -> None:
                 ax.text(
                     -0.72,
                     1.16,
-                    "AB"[r],
+                    "ABCDEFGH"[r],
                     transform=ax.transAxes,
                     fontsize=8.0,
                     fontweight="bold",

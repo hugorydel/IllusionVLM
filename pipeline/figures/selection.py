@@ -8,6 +8,9 @@ are recorded here, next to the list they shape.
 
 from __future__ import annotations
 
+import pandas as pd
+
+from pipeline.figures.figstyle import SPECIES_ORDER
 from pipeline.human_comparison.conventions import ILLUSION_ORDER
 
 # The subset the figures show. Two illusions are held out; both stay in the
@@ -38,6 +41,22 @@ from pipeline.human_comparison.conventions import ILLUSION_ORDER
 # stronger.
 FIGURES_EXCLUDED = {"RodFrame", "Delboeuf"}
 FIGURE_ILLUSIONS = [i for i in ILLUSION_ORDER if i not in FIGURES_EXCLUDED]
+
+
+def species_present(table: pd.DataFrame) -> list[str]:
+    """
+    The species in `table`, humans first, then models in config.MODELS order.
+
+    Figures draw whichever models have data, so a model joins every figure as
+    soon as its results are in the tables, and keeps its place and colour.
+    """
+    have = set(table["species"].unique())
+    return [s for s in SPECIES_ORDER if s in have]
+
+
+def models_present(table: pd.DataFrame) -> list[str]:
+    """The models in `table`, in config.MODELS order."""
+    return [s for s in species_present(table) if s != "human"]
 
 
 # Display names for axis labels and captions.

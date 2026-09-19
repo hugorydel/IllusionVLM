@@ -1,10 +1,9 @@
 /results/batch_staging/
 results/batch_staging/*.jsonl
-results/*/_batch_tmp
-results/*/errors/
+results/*/*/_batch_tmp
+results/*/*/errors/
 batch_input_*.jsonl
 __pycache__/
-/stimuli/
 /tests/sample_data/
 /archive/
 /tests/output/

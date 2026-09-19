@@ -1,6 +1,6 @@
-illusion,n_shared_cells,n_vlm_only_cells,n_human_only_cells
-MullerLyer,128,172,0
-VerticalHorizontal,128,292,0
-Ponzo,128,352,0
-Ebbinghaus,128,112,0
-Contrast,128,112,0
+species,illusion,n_shared_cells,n_vlm_only_cells,n_human_only_cells
+gpt-5.2,MullerLyer,128,172,0
+gpt-5.2,VerticalHorizontal,128,292,0
+gpt-5.2,Ponzo,128,352,0
+gpt-5.2,Ebbinghaus,128,112,0
+gpt-5.2,Contrast,128,112,0
