@@ -208,22 +208,6 @@ strengths and is not driven by the end point.
 
 ---
 
-## Figure S3 — Exact response probabilities (draft, awaiting the open-model runs)
-
-> **Figure S3. Exact response probabilities against the sampled responses,
-> for the open-weight models.** For each stimulus, each model's probability of
-> choosing each option was read directly from its output, from the same pass
-> that produced its 100 sampled answers. Lines: the error rate these
-> probabilities predict at the sampling temperature (0.3), averaged over the
-> differences tested at each strength. Dots: the error rate of the 100 sampled
-> answers at the same strengths. Where the dots follow the line, the samples
-> behave as draws from the model's own probabilities, and the line is the
-> same curve as in Figure 3 without sampling noise. GPT-5.2 is not shown
-> because its probabilities were not stored. Strength is normalised as in
-> Figure 3; shared-grid cells only.
-
----
-
 ## Notes for the Methods
 
 **Held out of the figures.** Both illusions stay in the dataset and in every

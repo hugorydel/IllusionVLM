@@ -17,9 +17,6 @@ files are the models' input here. Two stages:
          fig4_summary              both measures relative to humans
          figS1_error_by_difficulty error rate by difficulty band (supplement)
          figS2_response_surface    raw choices per condition (supplement)
-         figS3_exact_probabilities exact option probabilities against the
-                                   sampled answers, for the open models
-                                   (supplement; only once any have run)
 
 Every figure draws humans and each model in config.MODELS that has results.
 
@@ -44,7 +41,6 @@ from pipeline.figures.panels import (
     fig4_summary,
     figS1_error_by_difficulty,
     figS2_response_surface,
-    figS3_exact_probabilities,
 )
 from pipeline.human_comparison import build_dataset
 
@@ -81,9 +77,6 @@ def render_figures(paper_dir: Path = PAPER_DIR, stimuli_root: Path = STIMULI_ROO
 
     print("\n  Figure S2 - response surfaces")
     figS2_response_surface.build(paper_dir, fig_dir / "figS2_response_surface.png")
-
-    print("\n  Figure S3 - exact probabilities")
-    figS3_exact_probabilities.build(paper_dir, fig_dir / "figS3_exact_probabilities.png")
 
 
 def run(

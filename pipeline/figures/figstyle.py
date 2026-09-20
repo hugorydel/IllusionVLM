@@ -54,31 +54,18 @@ WARM = "#C8763C"
 # SPECIES: HUMANS AND EVERY MODEL IN config.MODELS
 # ============================================================================
 #
-# Humans and GPT-5.2 keep the two temperature poles. Each open-model family
-# takes one further hue, lighter for smaller models. PROVISIONAL: eight
-# overlapping curves cannot pass every colour-vision check at once
-# (validate_palette.js: the InternVL greens collapse onto GPT-5.2's orange for
-# protanopes). InternVL is therefore also drawn dashed (LINESTYLE), and the
-# palette is to be revisited once the models' data show how they group.
+# Humans and the model take the two temperature poles. The registry drives the
+# order and the labels, so a model added to config.MODELS needs a colour here
+# and nothing else.
 
-FAMILY_COLOURS = {
-    "qwen3-vl-2b": "#A68FEA",
-    "qwen3-vl-8b": "#7A58D2",
-    "qwen3-vl-32b": "#5534A8",
-    "internvl3.5-2b": "#74C98C",
-    "internvl3.5-8b": "#3A9B5C",
-    "internvl3.5-38b": "#17693A",
-}
-
-SERIES = {"human": COOL, "gpt-5.2": WARM, **FAMILY_COLOURS}
+SERIES = {"human": COOL, "gpt-5.2": WARM}
 SPECIES_LABEL = {"human": "Humans", **{m["key"]: m["label"] for m in MODELS}}
 SPECIES_ORDER = ["human"] + [m["key"] for m in MODELS]
-LINESTYLE = {key: (0, (3.2, 1.6)) for key in SERIES if key.startswith("internvl")}
 
 
 def line_style(species: str) -> dict:
     """Colour and dash for one species' line."""
-    return {"color": SERIES[species], "linestyle": LINESTYLE.get(species, "-")}
+    return {"color": SERIES[species], "linestyle": "-"}
 
 
 # ============================================================================

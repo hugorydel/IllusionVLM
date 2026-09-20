@@ -1,0 +1,16 @@
+model,illusion,illusion_strength,n_points_used,PSE,PSE_SE,PSE_CI_low,PSE_CI_high,slope,slope_SE,sigma,sigma_SE,converged,fit_status,fit_R2,AIC,BIC,boundary_hit,monotonicity_warning,flat_curve_warning
+GPT-5.2,Contrast,-31.5,16,0.0,0.0,0.0,0.0,3.989423,0.0,0.1,0.0,True,,0.9834,1293.448,1294.993,False,False,False
+GPT-5.2,Contrast,-27.0,16,0.0,0.0,0.0,0.0,3.989423,0.0,0.1,0.0,True,,0.7528,5207.842,5209.387,False,False,False
+GPT-5.2,Contrast,-22.5,16,0.0,0.0,0.0,0.0,3.989423,0.0,0.1,0.0,True,,0.9388,2813.154,2814.699,False,False,False
+GPT-5.2,Contrast,-18.0,16,0.0,0.0,0.0,0.0,3.989423,0.0,0.1,0.0,True,,1.0,4.0,5.545,False,False,False
+GPT-5.2,Contrast,-13.5,16,0.0,0.0,0.0,0.0,3.989423,0.0,0.1,0.0,True,,1.0,4.0,5.545,False,False,False
+GPT-5.2,Contrast,-9.0,16,0.0,0.0,0.0,0.0,3.989423,0.0,0.1,0.0,True,,1.0,4.0,5.545,False,False,False
+GPT-5.2,Contrast,-4.5,16,0.0,0.0,0.0,0.0,3.989423,0.0,0.1,0.0,True,,1.0,4.0,5.545,False,False,False
+GPT-5.2,Contrast,0.0,16,0.0,0.0,0.0,0.0,3.989423,0.0,0.1,0.0,True,,0.9983,418.465,420.01,False,False,False
+GPT-5.2,Contrast,4.5,16,0.0,0.0,0.0,0.0,3.989423,0.0,0.1,0.0,True,,0.4555,10687.995,10689.54,False,False,False
+GPT-5.2,Contrast,9.0,16,0.0,0.0,0.0,0.0,3.989423,0.0,0.1,0.0,True,,0.2073,14326.079,14327.624,False,False,False
+GPT-5.2,Contrast,13.5,16,0.0,0.0,0.0,0.0,3.989423,0.0,0.1,0.0,True,,-0.8744,27266.607,27268.153,False,False,False
+GPT-5.2,Contrast,18.0,16,0.0,0.0,0.0,0.0,3.989423,0.0,0.1,0.0,True,,-0.8058,23996.937,23998.482,False,False,False
+GPT-5.2,Contrast,22.5,16,0.0,0.0,0.0,0.0,3.989423,0.0,0.1,0.0,True,,-1.9912,30628.382,30629.927,False,False,False
+GPT-5.2,Contrast,27.0,16,0.0,0.0,0.0,0.0,3.989423,0.0,0.1,0.0,True,,-2.4221,35095.397,35096.942,False,False,False
+GPT-5.2,Contrast,31.5,16,0.0,0.0,0.0,0.0,3.989423,0.0,0.1,0.0,True,,-3.7651,41220.273,41221.818,False,False,False

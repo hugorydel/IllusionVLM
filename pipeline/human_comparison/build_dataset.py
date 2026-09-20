@@ -26,9 +26,6 @@ Outputs
     shared_grid.csv   per (model, illusion): what it shares with the humans,
                       and what was dropped
     human_scores.csv  per-participant human sensitivity scores (study3)
-    probabilities.csv per (model, shared cell): the exact option probabilities,
-                      for the open models run locally (only when any exist)
-
 All comparisons are computed on the shared (strength, difference) grid. The
 models' grid extends beyond the human one; those extra cells are kept in
 cells.csv, flagged `shared=False`, and excluded from everything that contrasts
@@ -101,22 +98,6 @@ def load_model_cells(results_root: Path) -> pd.DataFrame:
     for key, grp in cells.groupby("species", sort=False):
         print(f"  {key}: {grp['illusion'].nunique()} illusions")
     return cells
-
-
-def load_model_probabilities(results_root: Path) -> pd.DataFrame | None:
-    """
-    Load the exact per-stimulus option probabilities, where a model has them.
-
-    Only the open-weight models run through pipeline/module_2/local_vlm.py
-    record these; None when no model does.
-    """
-    frames = [
-        apply_canonical_signs(
-            pd.read_csv(path).assign(illusion=illusion), key
-        ).assign(species=key)
-        for key, illusion, path in _model_files(results_root, "probabilities.csv")
-    ]
-    return pd.concat(frames, ignore_index=True) if frames else None
 
 
 def load_human_cells(human_dir: Path) -> pd.DataFrame:
@@ -196,13 +177,6 @@ def build(results_root: Path, human_dir: Path, out_dir: Path = OUT_DIR) -> dict:
     models = models[[c for c in models.columns if c != "species"] + ["species"]]
     cells = pd.concat([models, human.assign(species="human")], ignore_index=True)
 
-    probabilities = load_model_probabilities(results_root)
-    if probabilities is not None:
-        probabilities = tag_shared(
-            probabilities, pd.concat(m_parts, ignore_index=True), ["species", "illusion"]
-        )
-        probabilities = probabilities[probabilities["shared"]].drop(columns="shared")
-
     # Everything comparative is computed on the shared grid only.
     shared_cells = cells[cells["shared"]].copy()
 
@@ -269,8 +243,6 @@ def build(results_root: Path, human_dir: Path, out_dir: Path = OUT_DIR) -> dict:
         "shared_grid": shared,
         "human_scores": human_scores,
     }
-    if probabilities is not None:
-        frames["probabilities"] = probabilities
     for name, frame in frames.items():
         path = out_dir / f"{name}.csv"
         frame.to_csv(path, index=False)
