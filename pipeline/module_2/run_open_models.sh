@@ -12,7 +12,8 @@
 #
 # --gpus overrides config.MODELS' n_gpus, for a pod whose single card holds a
 # model the config splits across two. --n and --illusion are passed through
-# to local_vlm.py, so a short timed run can precede the full ones:
+# to local_vlm.py, so a short timed run can precede the full ones, and
+# --sampled generates every answer rather than drawing them:
 #
 #     bash pipeline/module_2/run_open_models.sh --pilot --n 100 internvl3.5-2b
 #
@@ -53,6 +54,7 @@ pilot=0
 allow_dirty=0
 skip_install=0
 gpus=""
+sampled=0
 n=""
 illusion=""
 models=()
@@ -60,6 +62,7 @@ while [ "$#" -gt 0 ]; do
     arg="$1"
     case "$arg" in
         --gpus) shift; gpus="$1" ;;
+        --sampled) sampled=1 ;;
         --n) shift; n="$1" ;;
         --illusion) shift; illusion="$1" ;;
         --pilot) pilot=1 ;;
@@ -213,7 +216,7 @@ for m in "${models[@]}"; do
     } > "$out/environment.txt"
 
     log "Running $m${flag:+ (pilot)}"
-    if python -m pipeline.module_2.local_vlm --model "$m" $flag ${gpus:+--gpus "$gpus"} ${n:+--n "$n"} ${illusion:+--illusion "$illusion"} 2>&1 | tee "$out/run.log"; then
+    if python -m pipeline.module_2.local_vlm --model "$m" $flag ${gpus:+--gpus "$gpus"} ${n:+--n "$n"} ${illusion:+--illusion "$illusion"} $([ "$sampled" -eq 1 ] && echo --sampled) 2>&1 | tee "$out/run.log"; then
         outputs+=("$out")
     else
         failed+=("$m")

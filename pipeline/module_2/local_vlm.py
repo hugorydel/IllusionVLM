@@ -18,11 +18,33 @@ WHAT EACH MODEL SEES
     preprocessing (Qwen3-VL: 192 visual tokens; InternVL3.5: dynamic 448 px
     tiling, 13 tiles for a 4:3 image). Nothing is resized to suit a model.
 
-ONE ENCODING, N RESPONSES
-    Each stimulus is sent once and N answers are sampled from it
-    (SamplingParams.n). The answer is a single token, so these are the same in
-    distribution as N separate calls, but the image is encoded once rather than
-    N times. Answer i to every stimulus is written as participant i.
+ONE FORWARD PASS PER STIMULUS
+    The answer is a single token: the constraint admits only the two options,
+    and their first tokens differ. Asking the model N times would therefore
+    repeat one deterministic forward pass N times to re-roll the same die, so
+    each stimulus is sent once and its N answers are drawn from the response
+    distribution that pass reports. This is the same sampling with the
+    redundant recomputation removed; what it saves is the image encoding,
+    which for InternVL3.5 is 3,328 of the 3,374 prompt tokens. Answer i to
+    every stimulus is written as participant i, as before.
+
+    The draws are reproducible: each stimulus seeds its own generator from
+    DRAW_SEED and its image id, so they do not depend on the order stimuli
+    are run in or on how many are run at once.
+
+    --sampled instead generates every answer (SamplingParams.n). It pays one
+    forward pass per answer - for InternVL3.5, a hundred encodings of the same
+    image - and exists so the drawn answers can be checked against generated
+    ones whenever that is worth the GPU time.
+
+THE GENERATED ANSWER IS KEPT AS A CHECK
+    One answer per stimulus is always generated rather than drawn, and two
+    things are verified against it. Per stimulus: that its first token
+    identifies the option its full text spells, which is the premise the
+    drawing rests on, and a first token matching both options or neither
+    fails the run. Per illusion: that the generated answers choose the first
+    option about as often as the exact probabilities say they should, which
+    is reported with the standard error it should be judged against.
 
 EXACT PROBABILITIES
     From the same pass, the log-probabilities of the two options' first tokens
@@ -35,8 +57,12 @@ EXACT PROBABILITIES
                                         neither option
         p_first                         P(first option) over the two, at T = 1
         p_first_sampled                 the same at the sampling temperature,
-                                        i.e. the expected proportion of the N
-                                        sampled answers that choose it
+                                        i.e. the proportion of answers that
+                                        choose it, and what they are drawn from
+        observed_first                  the realised proportion among the N
+                                        answers written for this stimulus
+        probe_first                     1 if the one generated answer chose the
+                                        first option, 0 if it chose the second
 
 SAMPLING SETTINGS ARE EXPLICIT
     vLLM otherwise applies each checkpoint's own generation_config (Qwen3-VL
@@ -54,10 +80,10 @@ RUNNING IT (on a rented GPU; there is no GPU on the analysis machine)
         bash pipeline/module_2/run_open_models.sh --pilot qwen3-vl-2b internvl3.5-2b
         bash pipeline/module_2/run_open_models.sh qwen3-vl-2b qwen3-vl-8b ...
 
-    The pilot runs one illusion with 10 answers per stimulus into
-    results/_pilot/, so it never mixes with real data. It prints the
-    image-token count, the share of valid answers, and how closely sampled
-    proportions follow the exact probabilities. Copy results/<model>/ back
+    The pilot runs one illusion into results/_pilot/, so it never mixes with
+    real data. It prints the image-token count, the share of valid answers,
+    and how far the generated answers fall from the exact probabilities.
+    Copy results/<model>/ back
     into this repository and run
         python run_pipeline.py --modules 3 4
 """
@@ -65,6 +91,7 @@ RUNNING IT (on a rented GPU; there is no GPU on the analysis machine)
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -96,9 +123,13 @@ MAX_ANSWER_TOKENS = 8
 LOGPROBS = 20
 MAX_MODEL_LEN = 8192
 SEED = 20260919
+# Separate from SEED so that regenerating the draws never silently changes
+# what the model was asked.
+DRAW_SEED = 20260920
 
 PILOT_ILLUSION = "MullerLyer"
-PILOT_N = 10
+# A pilot costs what a real run costs now, so it uses the real answer count.
+PILOT_N = N_PARTICIPANTS
 
 
 # ============================================================================
@@ -215,6 +246,34 @@ def p_first(lp_first: float, lp_second: float, temperature: float) -> float:
     return 1.0 / (1.0 + math.exp((lp_second - lp_first) / temperature))
 
 
+def first_token_option(top: dict, token_id: int, options: list[str]) -> str | None:
+    """
+    The option a generated first token identifies, or None if it identifies
+    no single one. `top` is that position's log-probability dict, which
+    always contains the token actually generated.
+    """
+    entry = (top or {}).get(token_id)
+    text = (entry.decoded_token or "").strip().lower() if entry is not None else ""
+    hits = [o for o in options if text and o.lower().startswith(text)]
+    return hits[0] if len(hits) == 1 else None
+
+
+# ============================================================================
+# DRAWING THE ANSWERS
+# ============================================================================
+
+
+def draw_rng(image_id: str) -> np.random.Generator:
+    """The generator for one stimulus' draws, fixed by DRAW_SEED and its id."""
+    digest = hashlib.sha256(f"{DRAW_SEED}:{image_id}".encode()).digest()[:8]
+    return np.random.default_rng(int.from_bytes(digest, "big"))
+
+
+def draw_answers(p: float, n: int, options: list[str], rng) -> list[str]:
+    """N answers drawn from the model's own distribution over the two options."""
+    return [options[0] if u < p else options[1] for u in rng.random(n)]
+
+
 # ============================================================================
 # ONE ILLUSION
 # ============================================================================
@@ -227,6 +286,7 @@ def run_illusion(
     out_root: Path,
     stimuli_root: Path = STIMULI_ROOT,
     make_params=sampling_params,
+    sampled: bool = False,
 ) -> dict:
     """
     Query every stimulus of one illusion and write its outputs.
@@ -234,6 +294,9 @@ def run_illusion(
     `llm` is anything with vLLM's `chat(messages, sampling_params, use_tqdm)`
     interface and `make_params` builds its per-stimulus settings, so the
     bookkeeping here can be checked without a GPU.
+
+    With `sampled`, all N answers are generated; otherwise one is generated and
+    N are drawn from the distribution it reports.
 
     Returns a summary for run_info.json and the pilot report.
     """
@@ -248,7 +311,7 @@ def run_illusion(
     for i, image_id in enumerate(image_ids):
         b64 = preprocess_image(image_dir / f"{image_id}.png", MAX_DIMENSIONS, JPEG_QUALITY)
         conversations.append(build_messages(illusion["prompt"], b64))
-        params.append(make_params(options, n, SEED + i))
+        params.append(make_params(options, n if sampled else 1, SEED + i))
 
     outputs = llm.chat(conversations, params, use_tqdm=True)
 
@@ -259,14 +322,40 @@ def run_illusion(
 
     records: dict[int, list[dict]] = {pid: [] for pid in range(1, n + 1)}
     errors: dict[int, list[dict]] = {}
-    prob_rows, prompt_tokens = [], []
+    prob_rows, prompt_tokens, ambiguous = [], [], []
 
     for image_id, output in zip(image_ids, outputs):
         _, strength, true_diff = parse_filename(image_id)
         prompt_tokens.append(len(output.prompt_token_ids))
 
-        for pid, sample in enumerate(output.outputs, start=1):
-            response = sample.text.strip()
+        # The generated answer: the source of the probabilities either way, and
+        # the check that its first token settles which option it is.
+        probe = output.outputs[0]
+        top = (probe.logprobs or [{}])[0]
+        (lp_a, lp_b), other = option_logprobs(top, options)
+        p_sampled = p_first(lp_a, lp_b, TEMPERATURE)
+
+        probe_text = probe.text.strip()
+        by_token = (
+            first_token_option(top, probe.token_ids[0], options)
+            if probe.token_ids
+            else None
+        )
+        if probe_text not in options or by_token != probe_text:
+            ambiguous.append(
+                {"image_id": image_id, "answer": probe_text, "first_token_option": by_token}
+            )
+
+        if sampled:
+            answers = [s.text.strip() for s in output.outputs]
+        elif math.isnan(p_sampled):
+            # Nothing to draw from; counted in probabilities_missing and left
+            # out of every participant's file.
+            answers = []
+        else:
+            answers = draw_answers(p_sampled, n, options, draw_rng(image_id))
+
+        for pid, response in enumerate(answers, start=1):
             record = {
                 "image_id": image_id,
                 "illusion_strength": strength,
@@ -279,8 +368,6 @@ def run_illusion(
             else:
                 errors.setdefault(pid, []).append(record)
 
-        first = output.outputs[0].logprobs
-        (lp_a, lp_b), other = option_logprobs(first[0] if first else {}, options)
         prob_rows.append(
             {
                 "image_id": image_id,
@@ -290,10 +377,15 @@ def run_illusion(
                 "logprob_second": lp_b,
                 "other_mass": other,
                 "p_first": p_first(lp_a, lp_b, 1.0),
-                "p_first_sampled": p_first(lp_a, lp_b, TEMPERATURE),
+                "p_first_sampled": p_sampled,
                 "temperature": TEMPERATURE,
-                "observed_first": float(
-                    np.mean([s.text.strip() == options[0] for s in output.outputs])
+                "observed_first": (
+                    float(np.mean([a == options[0] for a in answers]))
+                    if answers
+                    else float("nan")
+                ),
+                "probe_first": (
+                    float(probe_text == options[0]) if probe_text in options else float("nan")
                 ),
             }
         )
@@ -308,23 +400,52 @@ def run_illusion(
             with open(err_dir / f"participant_{pid:02d}_errors.jsonl", "w", encoding="utf-8") as f:
                 for row in rows:
                     f.write(json.dumps(row) + "\n")
+    if ambiguous:
+        err_dir.mkdir(parents=True, exist_ok=True)
+        with open(err_dir / "first_token_ambiguous.jsonl", "w", encoding="utf-8") as f:
+            for row in ambiguous:
+                f.write(json.dumps(row) + "\n")
 
     probs = pd.DataFrame(prob_rows)
     probs.to_csv(out_dir / "probabilities.csv", index=False)
 
-    n_total = len(image_ids) * n
-    n_invalid = sum(len(v) for v in errors.values())
-    return {
+    # How far the generated answers fall from the exact probabilities across
+    # the illusion's stimuli. One answer is too few to judge a stimulus by, but
+    # their mean is not: under those probabilities it has standard error
+    # sqrt(sum p(1 - p)) / K, which is reported beside it.
+    usable = probs.dropna(subset=["p_first_sampled", "probe_first"])
+    p_exact = usable["p_first_sampled"].to_numpy()
+    gap = float(usable["probe_first"].mean() - p_exact.mean()) if len(p_exact) else float("nan")
+    gap_se = (
+        float(np.sqrt((p_exact * (1.0 - p_exact)).sum()) / len(p_exact))
+        if len(p_exact)
+        else float("nan")
+    )
+
+    summary = {
         "illusion": name,
         "n_stimuli": len(image_ids),
         "n_samples": n,
-        "valid_share": 1.0 - n_invalid / n_total,
+        "answers": "generated" if sampled else "drawn",
+        "valid_share": sum(len(v) for v in records.values()) / (len(image_ids) * n),
         "prompt_tokens": [min(prompt_tokens), max(prompt_tokens)],
-        "probabilities_missing": int(probs["p_first"].isna().sum()),
-        "mean_abs_sampled_vs_exact": float(
+        "probabilities_missing": int(probs["p_first_sampled"].isna().sum()),
+        "first_token_ambiguous": len(ambiguous),
+        "generated_vs_exact": gap,
+        "generated_vs_exact_se": gap_se,
+        "mean_abs_observed_vs_exact": float(
             (probs["observed_first"] - probs["p_first_sampled"]).abs().mean()
         ),
     }
+
+    if ambiguous and not sampled:
+        raise RuntimeError(
+            f"{name}: {len(ambiguous)} of {len(image_ids)} answers are not settled by "
+            f"their first token, which is what drawing the other answers assumes. "
+            f"See {err_dir / 'first_token_ambiguous.jsonl'}, and rerun this model "
+            f"with --sampled to generate every answer instead."
+        )
+    return summary
 
 
 # ============================================================================
@@ -363,6 +484,7 @@ def run(
     illusion: str | None = None,
     n: int | None = None,
     gpus: int | None = None,
+    sampled: bool = False,
 ) -> None:
     """Run one open model over the illusion registry (or the pilot subset)."""
     matches = [m for m in MODELS if m["key"] == model_key]
@@ -388,14 +510,17 @@ def run(
 
     summaries = []
     for ill in illusions:
-        print(f"\n  {model['label']} — {ill['name']}: {n} answers per stimulus")
-        summary = run_illusion(llm, ill, n, out_root)
+        how = "generated" if sampled else "drawn"
+        print(f"\n  {model['label']} — {ill['name']}: {n} answers per stimulus, {how}")
+        summary = run_illusion(llm, ill, n, out_root, sampled=sampled)
         summaries.append(summary)
         print(
             f"    valid answers {summary['valid_share']:.1%} | "
             f"prompt tokens {summary['prompt_tokens'][0]}-{summary['prompt_tokens'][1]} | "
-            f"sampled vs exact P, mean |diff| {summary['mean_abs_sampled_vs_exact']:.3f} | "
-            f"stimuli without both option logprobs {summary['probabilities_missing']}"
+            f"generated vs exact P {summary['generated_vs_exact']:+.3f} "
+            f"(SE {summary['generated_vs_exact_se']:.3f}) | "
+            f"stimuli without both option logprobs {summary['probabilities_missing']} | "
+            f"first token ambiguous {summary['first_token_ambiguous']}"
         )
 
     info = {
@@ -405,6 +530,8 @@ def run(
         "temperature": TEMPERATURE,
         "top_p": 1.0,
         "n_samples": n,
+        "answers": "generated" if sampled else "drawn",
+        "draw_seed": None if sampled else DRAW_SEED,
         "tensor_parallel_size": n_gpus,
         "seed": SEED,
         "max_answer_tokens": MAX_ANSWER_TOKENS,
@@ -423,9 +550,14 @@ def main() -> None:
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument("--model", required=True, help="Model key from config.MODELS")
-    parser.add_argument("--pilot", action="store_true", help="One illusion, 10 answers, into results/_pilot/")
+    parser.add_argument("--pilot", action="store_true", help="One illusion, into results/_pilot/")
     parser.add_argument("--illusion", default=None, help="Restrict to one illusion")
     parser.add_argument("--n", type=int, default=None, help="Answers per stimulus")
+    parser.add_argument(
+        "--sampled",
+        action="store_true",
+        help="Generate every answer instead of drawing them (one forward pass each)",
+    )
     parser.add_argument(
         "--gpus",
         type=int,
@@ -433,7 +565,14 @@ def main() -> None:
         help="Override the model's n_gpus, e.g. 1 for a 38B model on one 96 GB card",
     )
     args = parser.parse_args()
-    run(args.model, pilot=args.pilot, illusion=args.illusion, n=args.n, gpus=args.gpus)
+    run(
+        args.model,
+        pilot=args.pilot,
+        illusion=args.illusion,
+        n=args.n,
+        gpus=args.gpus,
+        sampled=args.sampled,
+    )
 
 
 if __name__ == "__main__":
