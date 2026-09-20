@@ -148,6 +148,22 @@ python -c "
 import torch, vllm
 print('vLLM', vllm.__version__, '| torch', torch.__version__, '| built for CUDA', torch.version.cuda)
 "
+# FlashInfer compiles its kernels on first use and takes the target
+# architecture from TORCH_CUDA_ARCH_LIST, which the pod images pin to the
+# architectures they were built for. On a card newer than that list,
+# FlashInfer reads an old architecture and refuses to build at all
+# ("FlashInfer requires GPUs with sm75 or higher"), killing the engine
+# during warm-up. Point the list at the card actually present.
+detected_arch="$(python -c 'import torch; print("%d.%d" % torch.cuda.get_device_capability(0))' 2>/dev/null || true)"
+if [ -n "$detected_arch" ]; then
+    export TORCH_CUDA_ARCH_LIST="$detected_arch"
+    log "Kernels will be built for CUDA capability $detected_arch"
+fi
+
+# vLLM's own top-k/top-p sampler needs no compilation, and with top_p = 1
+# and no top_k it draws from the same distribution as FlashInfer's, so the
+# sampler is one fewer architecture-specific kernel to build per session.
+export VLLM_USE_FLASHINFER_SAMPLER="${VLLM_USE_FLASHINFER_SAMPLER:-0}"
 nvidia-smi --query-gpu=name,driver_version --format=csv,noheader
 
 # 4. GPUs ---------------------------------------------------------------------
@@ -188,6 +204,9 @@ for m in "${models[@]}"; do
         echo
         echo "--- nvidia-smi"
         nvidia-smi
+        echo
+        echo "--- kernel and sampler settings"
+        env | grep -E '^(VLLM_|TORCH_CUDA_ARCH_LIST=|HF_HOME=)' | grep -viE 'token|key|secret|password' | sort || true
         echo
         echo "--- pip freeze"
         python -m pip freeze
