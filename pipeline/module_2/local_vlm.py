@@ -150,13 +150,19 @@ def sampling_params(options: list[str], n: int, seed: int):
     )
 
 
-def load_engine(model: dict):
-    """A vLLM engine for `model`, with the checkpoint's generation defaults off."""
+def load_engine(model: dict, gpus: int | None = None):
+    """
+    A vLLM engine for `model`, with the checkpoint's generation defaults off.
+
+    `gpus` overrides the model's n_gpus, for a pod whose single card is large
+    enough for a model config splits across two (InternVL3.5-38B on one 96 GB
+    or 141 GB GPU, say).
+    """
     from vllm import LLM
 
     return LLM(
         model=model["hf_id"],
-        tensor_parallel_size=model.get("n_gpus", 1),
+        tensor_parallel_size=gpus or model.get("n_gpus", 1),
         trust_remote_code=True,
         max_model_len=MAX_MODEL_LEN,
         limit_mm_per_prompt={"image": 1},
@@ -351,7 +357,13 @@ def provenance() -> dict:
     }
 
 
-def run(model_key: str, pilot: bool = False, illusion: str | None = None, n: int | None = None) -> None:
+def run(
+    model_key: str,
+    pilot: bool = False,
+    illusion: str | None = None,
+    n: int | None = None,
+    gpus: int | None = None,
+) -> None:
     """Run one open model over the illusion registry (or the pilot subset)."""
     matches = [m for m in MODELS if m["key"] == model_key]
     if not matches or matches[0].get("backend") != "vllm":
@@ -370,8 +382,9 @@ def run(model_key: str, pilot: bool = False, illusion: str | None = None, n: int
 
     import vllm
 
-    print(f"Loading {model['hf_id']} on {model.get('n_gpus', 1)} GPU(s)...")
-    llm = load_engine(model)
+    n_gpus = gpus or model.get("n_gpus", 1)
+    print(f"Loading {model['hf_id']} on {n_gpus} GPU(s)...")
+    llm = load_engine(model, n_gpus)
 
     summaries = []
     for ill in illusions:
@@ -392,6 +405,7 @@ def run(model_key: str, pilot: bool = False, illusion: str | None = None, n: int
         "temperature": TEMPERATURE,
         "top_p": 1.0,
         "n_samples": n,
+        "tensor_parallel_size": n_gpus,
         "seed": SEED,
         "max_answer_tokens": MAX_ANSWER_TOKENS,
         "image_preprocessing": {"max_dimension": MAX_DIMENSIONS, "jpeg_quality": JPEG_QUALITY},
@@ -412,8 +426,14 @@ def main() -> None:
     parser.add_argument("--pilot", action="store_true", help="One illusion, 10 answers, into results/_pilot/")
     parser.add_argument("--illusion", default=None, help="Restrict to one illusion")
     parser.add_argument("--n", type=int, default=None, help="Answers per stimulus")
+    parser.add_argument(
+        "--gpus",
+        type=int,
+        default=None,
+        help="Override the model's n_gpus, e.g. 1 for a 38B model on one 96 GB card",
+    )
     args = parser.parse_args()
-    run(args.model, pilot=args.pilot, illusion=args.illusion, n=args.n)
+    run(args.model, pilot=args.pilot, illusion=args.illusion, n=args.n, gpus=args.gpus)
 
 
 if __name__ == "__main__":

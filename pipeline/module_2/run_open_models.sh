@@ -8,6 +8,13 @@
 #     git checkout <commit>        # optional: pin the exact code to run
 #     bash pipeline/module_2/run_open_models.sh --pilot qwen3-vl-2b internvl3.5-2b
 #     bash pipeline/module_2/run_open_models.sh qwen3-vl-2b qwen3-vl-8b
+#     bash pipeline/module_2/run_open_models.sh --gpus 1 internvl3.5-38b
+#
+# --gpus overrides config.MODELS' n_gpus, for a pod whose single card holds a
+# model the config splits across two. --n and --illusion are passed through
+# to local_vlm.py, so a short timed run can precede the full ones:
+#
+#     bash pipeline/module_2/run_open_models.sh --pilot --n 100 internvl3.5-2b
 #
 # In order, it:
 #   1. refuses to run on modified tracked files (--allow-dirty overrides), so
@@ -26,10 +33,11 @@
 
 set -euo pipefail
 
-# vLLM >= 0.11 is the first release with Qwen3-VL. Pin this to the exact
-# version the pilot ran on before the full runs; run_info.json and
-# environment.txt record the installed version either way.
-VLLM_SPEC="${VLLM_SPEC:-vllm>=0.11}"
+# The pilot proved this combination: vLLM 0.29.0 with torch 2.13.0+cu132,
+# on a driver supporting CUDA 13.0. Both model families answered every
+# stimulus, so the full runs pin it. run_info.json and environment.txt
+# record the installed version either way; override with VLLM_SPEC.
+VLLM_SPEC="${VLLM_SPEC:-vllm==0.29.0}"
 
 # vLLM and PyTorch must be built for the CUDA version the pod's driver
 # supports. Plain `pip install vllm` takes the newest build, which on a
@@ -44,16 +52,24 @@ REPO_ROOT="$(pwd)"
 pilot=0
 allow_dirty=0
 skip_install=0
+gpus=""
+n=""
+illusion=""
 models=()
-for arg in "$@"; do
+while [ "$#" -gt 0 ]; do
+    arg="$1"
     case "$arg" in
+        --gpus) shift; gpus="$1" ;;
+        --n) shift; n="$1" ;;
+        --illusion) shift; illusion="$1" ;;
         --pilot) pilot=1 ;;
         --allow-dirty) allow_dirty=1 ;;
         --skip-install) skip_install=1 ;;
-        -h|--help) sed -n '2,25p' "$0"; exit 0 ;;
+        -h|--help) sed -n '2,32p' "$0"; exit 0 ;;
         -*) echo "Unknown option: $arg" >&2; exit 2 ;;
         *) models+=("$arg") ;;
     esac
+    shift
 done
 if [ "${#models[@]}" -eq 0 ]; then
     echo "Name at least one model, e.g.: bash $0 --pilot qwen3-vl-2b" >&2
@@ -147,6 +163,7 @@ print(hits[0].get('n_gpus', 1) if hits else 'unknown')
         echo "Unknown open model: $m (see config.MODELS)" >&2
         exit 2
     fi
+    [ -n "$gpus" ] && need="$gpus"
     if [ "$need" -gt "$available_gpus" ]; then
         echo "$m needs $need GPUs; this pod has $available_gpus." >&2
         exit 1
@@ -177,7 +194,7 @@ for m in "${models[@]}"; do
     } > "$out/environment.txt"
 
     log "Running $m${flag:+ (pilot)}"
-    if python -m pipeline.module_2.local_vlm --model "$m" $flag 2>&1 | tee "$out/run.log"; then
+    if python -m pipeline.module_2.local_vlm --model "$m" $flag ${gpus:+--gpus "$gpus"} ${n:+--n "$n"} ${illusion:+--illusion "$illusion"} 2>&1 | tee "$out/run.log"; then
         outputs+=("$out")
     else
         failed+=("$m")
